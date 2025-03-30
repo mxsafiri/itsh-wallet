@@ -9,6 +9,7 @@ const { initializeStellarAccounts } = require('./src/services/stellarService');
 const authRoutes = require('./src/api/authRoutes');
 const walletRoutes = require('./src/api/walletRoutes');
 const transactionRoutes = require('./src/api/transactionRoutes');
+const stellarAuthRoutes = require('./src/api/stellarAuthRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -29,6 +30,7 @@ initializeStellarAccounts().catch(console.error);
 app.use('/api/auth', authRoutes);
 app.use('/api/wallet', walletRoutes);
 app.use('/api/transactions', transactionRoutes);
+app.use('/api/stellar-auth', stellarAuthRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

@@ -139,6 +139,15 @@ const LoginScreen = ({ navigation }) => {
                 </TouchableOpacity>
               </View>
 
+              {/* Stellar Authentication Option */}
+              <TouchableOpacity 
+                style={styles.stellarAuthContainer}
+                onPress={() => navigation.navigate('StellarLogin')}
+                disabled={loading}
+              >
+                <Text style={styles.stellarAuthText}>Sign in with Stellar Authentication</Text>
+              </TouchableOpacity>
+
               {/* Quick login for demo purposes */}
               <TouchableOpacity
                 style={styles.demoButton}
@@ -225,13 +234,22 @@ const styles = StyleSheet.create({
     color: '#00A86B',
     fontWeight: 'bold',
   },
+  stellarAuthContainer: {
+    marginTop: 15,
+    alignItems: 'center',
+  },
+  stellarAuthText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    textDecorationLine: 'underline',
+  },
   demoButton: {
     marginTop: 40,
     alignItems: 'center',
   },
   demoButtonText: {
     color: '#FFFFFF80',
-    textDecorationLine: 'underline',
+    fontSize: 14,
   },
   footer: {
     alignItems: 'center',
