@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const { initializeDatabase } = require('./src/services/databaseService');
+const supabaseService = require('./src/services/supabaseService');
 const { initializeStellarAccounts } = require('./src/services/stellarService');
 
 // Import routes
@@ -18,8 +19,26 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(bodyParser.json());
 
-// Initialize database and create tables
-initializeDatabase();
+// Initialize database
+// For local development, use SQLite
+if (process.env.NODE_ENV === 'development') {
+  initializeDatabase();
+} else {
+  // For production, use Supabase
+  supabaseService.initializeDatabase()
+    .then(success => {
+      if (success) {
+        console.log('Supabase database initialized');
+        // Create mock users for testing
+        if (process.env.CREATE_MOCK_USERS === 'true') {
+          supabaseService.createMockUsers();
+        }
+      }
+    })
+    .catch(error => {
+      console.error('Failed to initialize Supabase database:', error);
+    });
+}
 
 // Initialize Stellar accounts (issuing and distribution)
 // This is async but we're not awaiting it here to avoid blocking server startup

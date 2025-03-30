@@ -5,6 +5,14 @@ const { userDb } = require('../services/databaseService');
 const { createTrustline } = require('../services/stellarService');
 const StellarSdk = require('stellar-sdk');
 const { encryptData } = require('../utils/encryption');
+const bcrypt = require('bcryptjs');
+const databaseService = require('../services/databaseService');
+const supabaseService = require('../services/supabaseService');
+
+// Helper function to get the appropriate database service
+const getDbService = () => {
+  return process.env.NODE_ENV === 'development' ? databaseService : supabaseService;
+};
 
 /**
  * @route   POST /api/auth/login
@@ -23,7 +31,8 @@ router.post('/login', async (req, res) => {
     }
     
     // Find user by phone number
-    const user = await userDb.findByPhoneNumber(phoneNumber);
+    const dbService = getDbService();
+    const user = await dbService.getUserByPhone(phoneNumber);
     
     if (!user) {
       return res.status(404).json({ 
@@ -33,7 +42,12 @@ router.post('/login', async (req, res) => {
     }
     
     // Verify PIN
-    if (user.pin !== pin) {
+    // For the MVP, we're using a simple PIN comparison
+    // In a real app, you would use bcrypt.compare
+    // const isMatch = await bcrypt.compare(pin, user.pinHash);
+    const isMatch = pin === user.pin; // Simplified for MVP
+    
+    if (!isMatch) {
       return res.status(401).json({ 
         success: false, 
         message: 'Invalid PIN' 
@@ -45,9 +59,9 @@ router.post('/login', async (req, res) => {
       success: true,
       user: {
         id: user.id,
-        phoneNumber: user.phone_number,
-        stellarPublicKey: user.stellar_public_key,
-        createdAt: user.created_at
+        phoneNumber: user.phoneNumber,
+        stellarPublicKey: user.stellarPublicKey,
+        createdAt: user.createdAt
       }
     });
   } catch (error) {
@@ -76,7 +90,8 @@ router.post('/register', async (req, res) => {
     }
     
     // Check if user already exists
-    const existingUser = await userDb.findByPhoneNumber(phoneNumber);
+    const dbService = getDbService();
+    const existingUser = await dbService.getUserByPhone(phoneNumber);
     
     if (existingUser) {
       return res.status(400).json({ 
@@ -84,6 +99,10 @@ router.post('/register', async (req, res) => {
         message: 'User with this phone number already exists' 
       });
     }
+    
+    // Hash the PIN
+    const salt = await bcrypt.genSalt(10);
+    const pinHash = await bcrypt.hash(pin, salt);
     
     // Generate a new Stellar keypair for the user
     const userKeypair = StellarSdk.Keypair.random();
@@ -93,13 +112,14 @@ router.post('/register', async (req, res) => {
     
     // Create a new user
     const userId = uuidv4();
-    await userDb.create({
-      id: userId,
-      phoneNumber,
-      pin,
-      stellarPublicKey: userKeypair.publicKey(),
-      stellarSecretKey: encryptedSecretKey
-    });
+    const user = await dbService.createUser(phoneNumber, pinHash, userKeypair.publicKey());
+    
+    if (!user) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Failed to create user' 
+      });
+    }
     
     // In a real app, we would fund the account and create a trustline
     // For the MVP, we'll just return success
