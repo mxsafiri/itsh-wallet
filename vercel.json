@@ -1,71 +1,20 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "backend/server.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "frontend/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "web-build"
-      }
-    }
+  "buildCommand": "cd frontend && npm install && npm run build",
+  "outputDirectory": "frontend/web-build",
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/backend/server.js" },
+    { "source": "/(.*)", "destination": "/" }
   ],
-  "routes": [
+  "headers": [
     {
-      "src": "/api/(.*)",
-      "dest": "backend/server.js",
-      "headers": {
-        "Access-Control-Allow-Credentials": "true",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET,OPTIONS,PATCH,DELETE,POST,PUT",
-        "Access-Control-Allow-Headers": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization"
-      }
-    },
-    {
-      "src": "/static/(.*)",
-      "dest": "frontend/web-build/static/$1"
-    },
-    {
-      "src": "/favicon.ico",
-      "dest": "frontend/web-build/favicon.ico"
-    },
-    {
-      "src": "/favicon-16.png",
-      "dest": "frontend/web-build/favicon-16.png"
-    },
-    {
-      "src": "/favicon-32.png",
-      "dest": "frontend/web-build/favicon-32.png"
-    },
-    {
-      "src": "/asset-manifest.json",
-      "dest": "frontend/web-build/asset-manifest.json"
-    },
-    {
-      "src": "/manifest.json",
-      "dest": "frontend/web-build/manifest.json"
-    },
-    {
-      "src": "/serve.json",
-      "dest": "frontend/web-build/serve.json"
-    },
-    {
-      "src": "/pwa/(.*)",
-      "dest": "frontend/web-build/pwa/$1"
-    },
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "frontend/web-build/index.html"
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Credentials", "value": "true" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET,OPTIONS,PATCH,DELETE,POST,PUT" },
+        { "key": "Access-Control-Allow-Headers", "value": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization" }
+      ]
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  },
-  "regions": ["dub1"]
+  ]
 }
