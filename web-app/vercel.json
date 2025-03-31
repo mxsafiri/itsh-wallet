@@ -16,11 +16,12 @@
       "dest": "/assets/$1"
     },
     {
+      "src": "/(.*\\.(js|css|ico|png|jpg|jpeg|svg|webp|json))",
+      "dest": "/$1"
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ],
-  "env": {
-    "VITE_API_URL": "https://itsh-wallet.vercel.app/api"
-  }
+  ]
 }

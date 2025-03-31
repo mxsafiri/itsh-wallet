@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
@@ -14,17 +14,20 @@ import TransactionHistoryScreen from './screens/TransactionHistoryScreen';
 import SecurityScreen from './screens/SecurityScreen';
 import SettingsScreen from './screens/SettingsScreen';
 
+// Loading component
+const LoadingScreen = () => (
+  <div className="flex items-center justify-center h-screen bg-green-600">
+    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+  </div>
+);
+
 // Protected route component
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
   
   // Show loading indicator while auth state is being determined
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-green-600">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
   
   if (!user) {
@@ -40,11 +43,7 @@ const PublicRoute = ({ children }) => {
   
   // Show loading indicator while auth state is being determined
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-green-600">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
   
   if (user) {
@@ -73,95 +72,97 @@ const NotFound = () => {
 function App() {
   return (
     <AuthProvider>
-      <Router basename="/">
-        <Routes>
-          {/* Public routes */}
-          <Route 
-            path="/" 
-            element={
-              <PublicRoute>
-                <WelcomeScreen />
-              </PublicRoute>
-            } 
-          />
-          <Route 
-            path="/login" 
-            element={
-              <PublicRoute>
-                <LoginScreen />
-              </PublicRoute>
-            } 
-          />
-          <Route 
-            path="/register" 
-            element={
-              <PublicRoute>
-                <RegisterScreen />
-              </PublicRoute>
-            } 
-          />
-          
-          {/* Protected routes */}
-          <Route 
-            path="/home" 
-            element={
-              <ProtectedRoute>
-                <HomeScreen />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/send" 
-            element={
-              <ProtectedRoute>
-                <SendScreen />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/receive" 
-            element={
-              <ProtectedRoute>
-                <ReceiveScreen />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/scan" 
-            element={
-              <ProtectedRoute>
-                <ScanScreen />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/transactions" 
-            element={
-              <ProtectedRoute>
-                <TransactionHistoryScreen />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/security" 
-            element={
-              <ProtectedRoute>
-                <SecurityScreen />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/settings" 
-            element={
-              <ProtectedRoute>
-                <SettingsScreen />
-              </ProtectedRoute>
-            } 
-          />
-          
-          {/* Fallback route */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+      <Router>
+        <Suspense fallback={<LoadingScreen />}>
+          <Routes>
+            {/* Public routes */}
+            <Route 
+              path="/" 
+              element={
+                <PublicRoute>
+                  <WelcomeScreen />
+                </PublicRoute>
+              } 
+            />
+            <Route 
+              path="/login" 
+              element={
+                <PublicRoute>
+                  <LoginScreen />
+                </PublicRoute>
+              } 
+            />
+            <Route 
+              path="/register" 
+              element={
+                <PublicRoute>
+                  <RegisterScreen />
+                </PublicRoute>
+              } 
+            />
+            
+            {/* Protected routes */}
+            <Route 
+              path="/home" 
+              element={
+                <ProtectedRoute>
+                  <HomeScreen />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/send" 
+              element={
+                <ProtectedRoute>
+                  <SendScreen />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/receive" 
+              element={
+                <ProtectedRoute>
+                  <ReceiveScreen />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/scan" 
+              element={
+                <ProtectedRoute>
+                  <ScanScreen />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/transactions" 
+              element={
+                <ProtectedRoute>
+                  <TransactionHistoryScreen />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/security" 
+              element={
+                <ProtectedRoute>
+                  <SecurityScreen />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/settings" 
+              element={
+                <ProtectedRoute>
+                  <SettingsScreen />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Fallback route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
       </Router>
     </AuthProvider>
   );
