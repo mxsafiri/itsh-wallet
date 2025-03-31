@@ -269,10 +269,21 @@ function NEDAPayWebApp() {
   );
 }
 
-// Mount the app
-ReactDOM.render(
-  <NEDAPayWebApp />,
-  document.getElementById('root')
-);
-
-export default NEDAPayWebApp;
+// Wait for DOM to be ready
+document.addEventListener('DOMContentLoaded', function() {
+  const rootElement = document.getElementById('root');
+  if (rootElement) {
+    // Clear any loading indicators
+    rootElement.innerHTML = '';
+    
+    // Mount the app
+    ReactDOM.render(
+      <NEDAPayWebApp />,
+      rootElement
+    );
+    
+    console.log('NEDApay web app mounted successfully');
+  } else {
+    console.error('Root element not found');
+  }
+});
