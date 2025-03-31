@@ -33,6 +33,14 @@
       "dest": "frontend/web-build/favicon.ico"
     },
     {
+      "src": "/favicon-16.png",
+      "dest": "frontend/web-build/favicon-16.png"
+    },
+    {
+      "src": "/favicon-32.png",
+      "dest": "frontend/web-build/favicon-32.png"
+    },
+    {
       "src": "/asset-manifest.json",
       "dest": "frontend/web-build/asset-manifest.json"
     },
@@ -41,12 +49,15 @@
       "dest": "frontend/web-build/manifest.json"
     },
     {
-      "src": "/(.*).png",
-      "dest": "frontend/web-build/$1.png"
+      "src": "/serve.json",
+      "dest": "frontend/web-build/serve.json"
     },
     {
-      "src": "/(.*).js",
-      "dest": "frontend/web-build/$1.js"
+      "src": "/pwa/(.*)",
+      "dest": "frontend/web-build/pwa/$1"
+    },
+    {
+      "handle": "filesystem"
     },
     {
       "src": "/(.*)",
