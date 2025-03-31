@@ -9,9 +9,50 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Add debugging styles -->
+    <style>
+      body {
+        background-color: #f5f5f5;
+        font-family: 'Inter', sans-serif;
+      }
+      #root {
+        min-height: 100vh;
+      }
+      .fallback-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        color: #00A86B;
+        text-align: center;
+        padding: 20px;
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <!-- Add fallback content in case React doesn't render -->
+    <div id="root">
+      <div class="fallback-content">
+        <h1>Loading NEDApay Wallet...</h1>
+        <p>If this message persists, please check the browser console for errors.</p>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
+    <!-- Add debugging script -->
+    <script>
+      // Check if the root element exists
+      if (!document.getElementById('root')) {
+        console.error('Root element not found!');
+      }
+      
+      // Add a timeout to check if React has rendered
+      setTimeout(() => {
+        const rootContent = document.getElementById('root').innerHTML;
+        if (rootContent.includes('fallback-content')) {
+          console.warn('React app did not render within 5 seconds');
+        }
+      }, 5000);
+    </script>
   </body>
 </html>
