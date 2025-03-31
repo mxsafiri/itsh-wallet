@@ -14,6 +14,13 @@ export const AuthProvider = ({ children }) => {
     // Check if user is already logged in
     const checkAuthStatus = async () => {
       setLoading(true);
+      
+      // Add a timeout to prevent indefinite loading
+      const timeoutId = setTimeout(() => {
+        console.log('Auth check timed out - forcing completion');
+        setLoading(false);
+      }, 5000); // 5 second timeout
+      
       try {
         const storedUser = localStorage.getItem('nedapay_user');
         const token = localStorage.getItem('nedapay_token');
@@ -26,7 +33,16 @@ export const AuthProvider = ({ children }) => {
           
           // Verify token is still valid by fetching user data
           try {
-            const response = await api.get(`/api/wallet/balance/${userData.id}`);
+            // Use a timeout for the API call
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 3000);
+            
+            const response = await api.get(`/api/wallet/balance/${userData.id}`, {
+              signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId);
+            
             if (response.data.success) {
               setUser(userData);
             } else {
@@ -51,11 +67,19 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('nedapay_token');
         delete api.defaults.headers.common['Authorization'];
       } finally {
+        clearTimeout(timeoutId);
         setLoading(false);
       }
     };
 
     checkAuthStatus();
+    
+    // Force loading to false after a timeout as a fallback
+    const forceTimeout = setTimeout(() => {
+      setLoading(false);
+    }, 8000);
+    
+    return () => clearTimeout(forceTimeout);
   }, []);
 
   // Login function
