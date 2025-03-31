@@ -1,7 +1,19 @@
 import axios from 'axios';
+import Constants from 'expo-constants';
+
+// Determine the API URL based on environment
+const getApiUrl = () => {
+  // For Expo Go development
+  if (__DEV__) {
+    return 'http://localhost:3000/api';
+  }
+  
+  // For production or preview deployments
+  return Constants.manifest?.extra?.apiUrl || 'https://your-vercel-deployment-url.vercel.app/api';
+};
 
 // Base URL for the API
-const API_URL = 'http://localhost:3000/api';
+const API_URL = getApiUrl();
 
 // Create axios instance with default config
 const api = axios.create({
@@ -10,6 +22,18 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+// Add auth token to requests if available
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 // Authentication API
 export const authAPI = {
@@ -50,6 +74,31 @@ export const walletAPI = {
   getQRCode: async (userId) => {
     try {
       const response = await api.get(`/wallet/qrcode/${userId}`);
+      return response.data;
+    } catch (error) {
+      throw error.response ? error.response.data : error;
+    }
+  },
+  
+  // Generate SEP-0007 payment URI
+  generatePayment: async (senderId, recipientId, amount, memo) => {
+    try {
+      const response = await api.post('/wallet/generate-payment', {
+        senderId,
+        recipientId,
+        amount,
+        memo
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response ? error.response.data : error;
+    }
+  },
+  
+  // Log transaction completion (called after user completes payment in wallet)
+  logTransaction: async (transactionId, txHash) => {
+    try {
+      const response = await api.get(`/wallet/log-transaction/${transactionId}?tx_hash=${txHash}`);
       return response.data;
     } catch (error) {
       throw error.response ? error.response.data : error;
@@ -115,6 +164,7 @@ export const transactionAPI = {
 };
 
 export default {
+  api,
   auth: authAPI,
   wallet: walletAPI,
   transaction: transactionAPI,

@@ -1,15 +1,22 @@
 const { createClient } = require('@supabase/supabase-js');
 
-// Initialize Supabase client
+// Initialize Supabase clients
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
   console.error('Supabase URL and Key must be provided in environment variables');
   process.exit(1);
 }
 
+// Regular client (respects Row Level Security)
 const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Admin client (bypasses Row Level Security) - only used in backend
+const supabaseAdmin = supabaseServiceKey 
+  ? createClient(supabaseUrl, supabaseServiceKey)
+  : supabase; // Fallback to regular client if service key not provided
 
 /**
  * Service for interacting with Supabase database
@@ -23,7 +30,8 @@ class SupabaseService {
     
     try {
       // Check connection by fetching a single row from users table
-      const { data, error } = await supabase
+      // Using admin client to ensure we can access the table regardless of RLS
+      const { data, error } = await supabaseAdmin
         .from('users')
         .select('id')
         .limit(1);
@@ -34,6 +42,12 @@ class SupabaseService {
       }
       
       console.log('Successfully connected to Supabase database');
+      
+      // Create mock users if configured to do so
+      if (process.env.CREATE_MOCK_USERS === 'true') {
+        await this.createMockUsers();
+      }
+      
       return true;
     } catch (error) {
       console.error('Failed to connect to Supabase:', error.message);
@@ -75,7 +89,7 @@ class SupabaseService {
 
     for (const user of mockUsers) {
       // Check if user already exists
-      const { data: existingUser } = await supabase
+      const { data: existingUser } = await supabaseAdmin
         .from('users')
         .select('id')
         .eq('phone_number', user.phone_number)
@@ -83,7 +97,7 @@ class SupabaseService {
 
       if (!existingUser) {
         // Insert new user
-        const { error } = await supabase
+        const { error } = await supabaseAdmin
           .from('users')
           .insert([user]);
 
@@ -102,7 +116,8 @@ class SupabaseService {
    * @returns {Promise<Object>} The user object
    */
   async getUserById(userId) {
-    const { data, error } = await supabase
+    // Using admin client for backend operations
+    const { data, error } = await supabaseAdmin
       .from('users')
       .select('*')
       .eq('id', userId)
@@ -122,7 +137,8 @@ class SupabaseService {
    * @returns {Promise<Object>} The user object
    */
   async getUserByPhone(phoneNumber) {
-    const { data, error } = await supabase
+    // Using admin client for backend operations
+    const { data, error } = await supabaseAdmin
       .from('users')
       .select('*')
       .eq('phone_number', phoneNumber)
@@ -150,7 +166,8 @@ class SupabaseService {
    * @returns {Promise<Object>} The created user object
    */
   async createUser(phoneNumber, pinHash, stellarPublicKey) {
-    const { data, error } = await supabase
+    // Using admin client for backend operations
+    const { data, error } = await supabaseAdmin
       .from('users')
       .insert([{
         phone_number: phoneNumber,
@@ -179,7 +196,8 @@ class SupabaseService {
    * @returns {Promise<Object>} The saved transaction
    */
   async saveTransaction(transaction) {
-    const { data, error } = await supabase
+    // Using admin client for backend operations
+    const { data, error } = await supabaseAdmin
       .from('transactions')
       .insert([{
         sender_id: transaction.senderId,
@@ -251,6 +269,72 @@ class SupabaseService {
       stellarTransactionId: tx.stellar_transaction_id,
       createdAt: tx.created_at
     }));
+  }
+
+  /**
+   * Get transactions by external ID (Stellar transaction ID)
+   * @param {string} externalId - The external transaction ID
+   * @returns {Promise<Array>} Array of transactions
+   */
+  async getTransactionByExternalId(externalId) {
+    // Using admin client for backend operations
+    const { data, error } = await supabaseAdmin
+      .from('transactions')
+      .select('*')
+      .eq('stellar_transaction_id', externalId);
+
+    if (error) {
+      console.error('Error fetching transaction by external ID:', error.message);
+      return null;
+    }
+
+    return data;
+  }
+
+  /**
+   * Update a transaction
+   * @param {string} transactionId - The transaction ID
+   * @param {Object} updates - The fields to update
+   * @returns {Promise<Object>} The updated transaction
+   */
+  async updateTransaction(transactionId, updates) {
+    // Using admin client for backend operations
+    const { data, error } = await supabaseAdmin
+      .from('transactions')
+      .update(updates)
+      .eq('id', transactionId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating transaction:', error.message);
+      return null;
+    }
+
+    return data;
+  }
+
+  /**
+   * Get user's transaction history
+   * @param {string} userId - The user ID
+   * @param {number} limit - Maximum number of transactions to return
+   * @returns {Promise<Array>} Array of transactions
+   */
+  async getUserTransactions(userId, limit = 10) {
+    // Using admin client for backend operations
+    const { data, error } = await supabaseAdmin
+      .from('transactions')
+      .select('*')
+      .or(`sender_id.eq.${userId},recipient_id.eq.${userId}`)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.error('Error fetching user transactions:', error.message);
+      return [];
+    }
+
+    return data;
   }
 }
 

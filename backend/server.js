@@ -19,31 +19,37 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(bodyParser.json());
 
-// Initialize database
-// For local development, use SQLite
-if (process.env.NODE_ENV === 'development') {
-  initializeDatabase();
-} else {
-  // For production, use Supabase
-  supabaseService.initializeDatabase()
-    .then(success => {
-      if (success) {
-        console.log('Supabase database initialized');
-        // Create mock users for testing
-        if (process.env.CREATE_MOCK_USERS === 'true') {
-          supabaseService.createMockUsers();
-        }
+// Initialize database based on environment
+const initializeApp = async () => {
+  try {
+    // For local development without Supabase, use SQLite
+    if (process.env.NODE_ENV !== 'production' && !process.env.SUPABASE_URL) {
+      console.log('Using SQLite database for development');
+      await initializeDatabase();
+    } else {
+      // For production or when Supabase is configured, use Supabase
+      console.log('Using Supabase database');
+      const success = await supabaseService.initializeDatabase();
+      
+      if (!success) {
+        console.error('Failed to initialize Supabase database. Exiting...');
+        process.exit(1);
       }
-    })
-    .catch(error => {
-      console.error('Failed to initialize Supabase database:', error);
+    }
+    
+    // Initialize Stellar accounts
+    await initializeStellarAccounts();
+    
+    // Start the server
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+      console.log(`Health check available at http://localhost:${PORT}/health`);
     });
-}
-
-// Initialize Stellar accounts (issuing and distribution)
-// This is async but we're not awaiting it here to avoid blocking server startup
-// In production, you'd want to handle this more gracefully
-initializeStellarAccounts().catch(console.error);
+  } catch (error) {
+    console.error('Failed to initialize application:', error);
+    process.exit(1);
+  }
+};
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -65,8 +71,5 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`iTZS Backend server running on port ${PORT}`);
-  console.log(`Health check available at http://localhost:${PORT}/health`);
-});
+// Initialize the application
+initializeApp();
