@@ -5,7 +5,8 @@
       "src": "package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "web-build"
+        "distDir": "web-build",
+        "installCommand": "npm install --legacy-peer-deps"
       }
     }
   ],
@@ -17,5 +18,8 @@
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ]
+  ],
+  "env": {
+    "API_URL": "https://itsh-wallet.vercel.app/api"
+  }
 }
