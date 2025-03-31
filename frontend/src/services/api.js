@@ -1,24 +1,30 @@
 import axios from 'axios';
 import Constants from 'expo-constants';
 import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
 
 // Determine the API URL based on environment
-const getApiUrl = () => {
+let API_URL;
+
+if (Platform.OS === 'web') {
+  // For web deployment, use the environment variable or fallback to the production URL
+  API_URL = process.env.API_URL || 'https://itsh-wallet.vercel.app/api';
+  console.log('Web API URL:', API_URL);
+} else {
   // For Expo Go development
   if (__DEV__) {
-    return 'http://localhost:3001/api';
+    API_URL = 'http://localhost:3001/api';
   }
-  
   // For production or preview deployments
-  return Constants.manifest?.extra?.apiUrl || 'https://itsh-wallet.vercel.app/api';
-};
-
-// Base URL for the API
-const API_URL = getApiUrl();
+  else {
+    API_URL = Constants.manifest?.extra?.apiUrl || 'https://itsh-wallet.vercel.app/api';
+  }
+}
 
 // Create axios instance with default config
 const api = axios.create({
   baseURL: API_URL,
+  timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -35,9 +41,25 @@ api.interceptors.request.use(
     } catch (error) {
       console.log('Error accessing secure storage:', error);
     }
+    console.log(`API Request: ${config.method.toUpperCase()} ${config.url}`);
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    console.error('API Request Error:', error);
+    return Promise.reject(error);
+  }
+);
+
+// Add response interceptor for debugging
+api.interceptors.response.use(
+  (response) => {
+    console.log(`API Response: ${response.status} ${response.config.url}`);
+    return response;
+  },
+  (error) => {
+    console.error('API Response Error:', error);
+    return Promise.reject(error);
+  }
 );
 
 // Authentication API

@@ -52,15 +52,23 @@ export default function App() {
       } catch (e) {
         // Restoring token failed
         console.log('Failed to restore authentication state:', e);
+      } finally {
+        // Always set loading to false, even if there's an error
+        setUserToken(userToken);
+        setUserData(userData);
+        setIsLoading(false);
       }
-
-      // After restoring token, update state
-      setUserToken(userToken);
-      setUserData(userData);
-      setIsLoading(false);
     };
 
+    // Add a timeout to ensure loading state is cleared even if bootstrapAsync fails
+    const timeoutId = setTimeout(() => {
+      setIsLoading(false);
+    }, 3000);
+
     bootstrapAsync();
+
+    // Clear timeout on cleanup
+    return () => clearTimeout(timeoutId);
   }, []);
 
   // Authentication context
