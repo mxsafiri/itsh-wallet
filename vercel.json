@@ -6,11 +6,8 @@
       "use": "@vercel/node"
     },
     {
-      "src": "frontend/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "web-build"
-      }
+      "src": "index.html",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -19,14 +16,17 @@
       "dest": "/backend/server.js"
     },
     {
-      "handle": "filesystem"
+      "src": "/health",
+      "dest": "/backend/server.js"
     },
     {
-      "src": "/(.*)",
-      "dest": "/frontend/web-build/index.html"
+      "src": "/",
+      "dest": "/index.html"
     }
   ],
   "env": {
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "STELLAR_NETWORK": "testnet",
+    "API_URL": "https://itsh-wallet-7j73ijqoa-vmuhagachi-gmailcoms-projects.vercel.app/api"
   }
 }

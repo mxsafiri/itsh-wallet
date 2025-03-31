@@ -9,7 +9,7 @@ const getApiUrl = () => {
   }
   
   // For production or preview deployments
-  return Constants.manifest?.extra?.apiUrl || 'https://your-vercel-deployment-url.vercel.app/api';
+  return Constants.manifest?.extra?.apiUrl || 'https://itsh-wallet-7j73ijqoa-vmuhagachi-gmailcoms-projects.vercel.app/api';
 };
 
 // Base URL for the API
