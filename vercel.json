@@ -2,31 +2,23 @@
   "version": 2,
   "builds": [
     {
-      "src": "backend/server.js",
+      "src": "server.js",
       "use": "@vercel/node"
-    },
-    {
-      "src": "index.html",
-      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/backend/server.js"
+      "dest": "/server.js"
     },
     {
-      "src": "/health",
-      "dest": "/backend/server.js"
-    },
-    {
-      "src": "/",
-      "dest": "/index.html"
+      "src": "/(.*)",
+      "dest": "/server.js"
     }
   ],
   "env": {
     "NODE_ENV": "production",
     "STELLAR_NETWORK": "testnet",
-    "API_URL": "https://itsh-wallet-7j73ijqoa-vmuhagachi-gmailcoms-projects.vercel.app/api"
+    "API_URL": "https://itsh-wallet-v7riw7q73-vmuhagachi-gmailcoms-projects.vercel.app/api"
   }
 }
