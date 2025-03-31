@@ -52,44 +52,36 @@ export const AuthProvider = ({ children }) => {
               delete api.defaults.headers.common['Authorization'];
             }
           } catch (error) {
-            console.error('Failed to validate token:', error);
-            // Clear storage on error
+            console.error('Error verifying auth token:', error);
+            // If there's an error, we'll clear the stored data to be safe
             localStorage.removeItem('nedapay_user');
             localStorage.removeItem('nedapay_token');
             delete api.defaults.headers.common['Authorization'];
           }
         }
       } catch (error) {
-        console.error('Authentication check failed:', error);
-        setError('Failed to check authentication status');
-        // Clear storage on error
-        localStorage.removeItem('nedapay_user');
-        localStorage.removeItem('nedapay_token');
-        delete api.defaults.headers.common['Authorization'];
+        console.error('Error checking auth status:', error);
       } finally {
         clearTimeout(timeoutId);
         setLoading(false);
       }
     };
-
+    
     checkAuthStatus();
-    
-    // Force loading to false after a timeout as a fallback
-    const forceTimeout = setTimeout(() => {
-      setLoading(false);
-    }, 8000);
-    
-    return () => clearTimeout(forceTimeout);
   }, []);
 
   // Login function
   const login = async (phoneNumber, pin) => {
     setLoading(true);
     try {
+      console.log('Attempting login with:', { phone: phoneNumber, pin });
+      
       const response = await api.post('/api/auth/login', {
         phone: phoneNumber,
         pin
       });
+
+      console.log('Login response:', response.data);
 
       if (response.data.success) {
         const userData = {
@@ -132,10 +124,14 @@ export const AuthProvider = ({ children }) => {
   const register = async (phoneNumber, pin) => {
     setLoading(true);
     try {
+      console.log('Attempting registration with:', { phone: phoneNumber, pin });
+      
       const response = await api.post('/api/auth/register', {
         phone: phoneNumber,
         pin
       });
+
+      console.log('Registration response:', response.data);
 
       if (response.data.success) {
         const userData = {
@@ -183,53 +179,21 @@ export const AuthProvider = ({ children }) => {
     setError(null);
   };
 
-  // Verify OTP (for phone verification)
-  const verifyOTP = async (phoneNumber, otp) => {
-    setLoading(true);
-    try {
-      const response = await api.post('/api/auth/verify-otp', {
-        phone: phoneNumber,
-        otp
-      });
-
-      if (!response.data.success) {
-        setError(response.data.message || 'OTP verification failed');
-      } else {
-        setError(null);
-      }
-
-      return {
-        success: response.data.success,
-        message: response.data.message
-      };
-    } catch (error) {
-      console.error('OTP verification error:', error);
-      const errorMessage = error.response?.data?.message || 'OTP verification failed. Please try again.';
-      setError(errorMessage);
-      return { 
-        success: false, 
-        message: errorMessage
-      };
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Reset error state
-  const clearError = () => {
-    setError(null);
-  };
-
-  const value = {
-    user,
-    loading,
-    error,
-    login,
-    register,
-    logout,
-    verifyOTP,
-    clearError
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        error,
+        login,
+        register,
+        logout,
+        isAuthenticated: !!user
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 };
+
+export default AuthContext;
