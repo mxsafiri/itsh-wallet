@@ -1,0 +1,26 @@
+{
+  "name": "nedapay-web",
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
+  "env": {
+    "VITE_API_URL": "https://itsh-wallet-2kwkxrggz-vmuhagachi-gmailcoms-projects.vercel.app/api"
+  }
+}
