@@ -9,6 +9,9 @@ import * as SecureStore from 'expo-secure-store';
 import AuthNavigator from './src/navigation/AuthNavigator';
 import MainNavigator from './src/navigation/MainNavigator';
 
+// Create a context for authentication
+export const AuthContext = React.createContext();
+
 // Define the theme
 const theme = {
   ...DefaultTheme,
@@ -114,6 +117,3 @@ export default function App() {
     </SafeAreaProvider>
   );
 }
-
-// Create a context for authentication
-export const AuthContext = React.createContext();
