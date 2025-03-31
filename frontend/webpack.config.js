@@ -2,6 +2,10 @@ const createExpoWebpackConfigAsync = require('@expo/webpack-config');
 const path = require('path');
 
 module.exports = async function (env, argv) {
+  // Set the entry point to our web-specific entry file
+  env.web = env.web || {};
+  env.web.entry = './src/index.web.js';
+
   const config = await createExpoWebpackConfigAsync(env, argv);
   
   // Add fallbacks for Node.js core modules
@@ -28,6 +32,13 @@ module.exports = async function (env, argv) {
     path.resolve(__dirname, 'assets'),
   ];
 
+  // Add aliases for better module resolution
+  config.resolve.alias = {
+    ...config.resolve.alias,
+    'react-native$': 'react-native-web',
+    'expo-secure-store': path.resolve(__dirname, 'src/polyfills/secureStorePolyfill.js'),
+  };
+
   // Add a rule to handle missing images
   config.module.rules.push({
     test: /\.(png|jpe?g|gif|svg)$/i,
@@ -53,6 +64,11 @@ module.exports = async function (env, argv) {
     new webpack.ProvidePlugin({
       process: 'process/browser',
       Buffer: ['buffer', 'Buffer'],
+    }),
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
+      'process.env.EXPO_PLATFORM': JSON.stringify('web'),
+      '__DEV__': process.env.NODE_ENV !== 'production',
     })
   );
 

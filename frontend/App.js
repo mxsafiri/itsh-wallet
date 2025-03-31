@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Provider as PaperProvider, DefaultTheme } from 'react-native-paper';
 import * as SecureStore from 'expo-secure-store';
+import { View, Text, ActivityIndicator } from 'react-native';
 
 // Import navigation
 import AuthNavigator from './src/navigation/AuthNavigator';
@@ -128,8 +129,19 @@ export default function App() {
   );
 
   if (isLoading) {
-    // We could show a loading screen here
-    return null;
+    // Return a loading component instead of null
+    return (
+      <SafeAreaProvider>
+        <PaperProvider theme={theme}>
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#00A86B' }}>
+            <Text style={{ color: 'white', fontSize: 24, fontWeight: 'bold', marginBottom: 10 }}>NEDApay</Text>
+            <Text style={{ color: 'white', marginBottom: 20 }}>Tanzania's Digital Payment Solution</Text>
+            {/* Simple loading indicator */}
+            <ActivityIndicator size="large" color="white" />
+          </View>
+        </PaperProvider>
+      </SafeAreaProvider>
+    );
   }
 
   return (
