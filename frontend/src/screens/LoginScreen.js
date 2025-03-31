@@ -31,14 +31,20 @@ const LoginScreen = ({ navigation }) => {
 
     try {
       setLoading(true);
+      console.log('Attempting login with:', { phoneNumber, pin });
+      
       const response = await authAPI.login(phoneNumber, pin);
+      console.log('Login response:', response);
       
       if (response.success) {
-        signIn(response.user);
+        console.log('Login successful, signing in user:', response.user);
+        await signIn(response.user);
+        console.log('User signed in successfully');
       } else {
         Alert.alert('Error', response.message || 'Login failed');
       }
     } catch (error) {
+      console.error('Login error:', error);
       Alert.alert('Error', error.message || 'Something went wrong');
     } finally {
       setLoading(false);
@@ -52,14 +58,19 @@ const LoginScreen = ({ navigation }) => {
       const demoPhone = '+255123456789';
       const demoPin = '1234';
       
+      console.log('Attempting quick login with demo credentials');
       const response = await authAPI.login(demoPhone, demoPin);
+      console.log('Quick login response:', response);
       
       if (response.success) {
-        signIn(response.user);
+        console.log('Quick login successful, signing in user:', response.user);
+        await signIn(response.user);
+        console.log('User signed in successfully');
       } else {
         Alert.alert('Error', response.message || 'Demo login failed');
       }
     } catch (error) {
+      console.error('Quick login error:', error);
       Alert.alert('Error', error.message || 'Something went wrong');
     } finally {
       setLoading(false);

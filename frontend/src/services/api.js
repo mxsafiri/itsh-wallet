@@ -1,15 +1,16 @@
 import axios from 'axios';
 import Constants from 'expo-constants';
+import * as SecureStore from 'expo-secure-store';
 
 // Determine the API URL based on environment
 const getApiUrl = () => {
   // For Expo Go development
   if (__DEV__) {
-    return 'http://localhost:3000/api';
+    return 'http://localhost:3001/api';
   }
   
   // For production or preview deployments
-  return Constants.manifest?.extra?.apiUrl || 'https://itsh-wallet-a2m7d6884-vmuhagachi-gmailcoms-projects.vercel.app/api';
+  return Constants.manifest?.extra?.apiUrl || 'https://itsh-wallet-ajsv63et3-vmuhagachi-gmailcoms-projects.vercel.app/api';
 };
 
 // Base URL for the API
@@ -25,10 +26,14 @@ const api = axios.create({
 
 // Add auth token to requests if available
 api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+  async (config) => {
+    try {
+      const token = await SecureStore.getItemAsync('authToken');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch (error) {
+      console.log('Error accessing secure storage:', error);
     }
     return config;
   },

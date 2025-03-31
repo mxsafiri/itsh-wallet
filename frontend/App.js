@@ -40,8 +40,13 @@ export default function App() {
         // Fetch the token and user data from storage
         userToken = await SecureStore.getItemAsync('userToken');
         const userDataString = await SecureStore.getItemAsync('userData');
+        
+        console.log('Bootstrap - userToken:', userToken);
+        console.log('Bootstrap - userDataString:', userDataString);
+        
         if (userDataString) {
           userData = JSON.parse(userDataString);
+          console.log('Bootstrap - parsed userData:', userData);
         }
       } catch (e) {
         // Restoring token failed
@@ -61,21 +66,36 @@ export default function App() {
   const authContext = React.useMemo(
     () => ({
       signIn: async (data) => {
+        console.log('signIn called with data:', data);
         // In a real app, we would validate credentials with the backend
-        // For the MVP, we'll just store the data locally
         try {
-          await SecureStore.setItemAsync('userToken', data.id);
+          // Store auth token if available
+          if (data.token) {
+            await SecureStore.setItemAsync('authToken', data.token);
+          }
+          
+          // Always store the user ID as the userToken for session management
+          await SecureStore.setItemAsync('userToken', data.id || String(Date.now()));
           await SecureStore.setItemAsync('userData', JSON.stringify(data));
-          setUserToken(data.id);
+          
+          console.log('Data stored in SecureStore');
+          
+          // Update state to trigger navigation change
+          setUserToken(data.id || String(Date.now()));
           setUserData(data);
+          
+          console.log('State updated, userToken:', data.id || String(Date.now()));
+          return true;
         } catch (e) {
-          console.log('Error signing in:', e);
+          console.error('Error signing in:', e);
+          return false;
         }
       },
       signOut: async () => {
         try {
           await SecureStore.deleteItemAsync('userToken');
           await SecureStore.deleteItemAsync('userData');
+          await SecureStore.deleteItemAsync('authToken');
           setUserToken(null);
           setUserData(null);
         } catch (e) {
@@ -84,14 +104,22 @@ export default function App() {
       },
       signUp: async (data) => {
         // In a real app, we would register with the backend
-        // For the MVP, we'll just store the data locally
         try {
-          await SecureStore.setItemAsync('userToken', data.id);
+          // Store auth token if available
+          if (data.token) {
+            await SecureStore.setItemAsync('authToken', data.token);
+          }
+          
+          await SecureStore.setItemAsync('userToken', data.id || String(Date.now()));
           await SecureStore.setItemAsync('userData', JSON.stringify(data));
-          setUserToken(data.id);
+          
+          // Update state to trigger navigation change
+          setUserToken(data.id || String(Date.now()));
           setUserData(data);
+          return true;
         } catch (e) {
-          console.log('Error signing up:', e);
+          console.error('Error signing up:', e);
+          return false;
         }
       },
       userData,
