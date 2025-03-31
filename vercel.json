@@ -8,17 +8,8 @@
   ],
   "routes": [
     {
-      "src": "/api/(.*)",
-      "dest": "/server.js"
-    },
-    {
       "src": "/(.*)",
       "dest": "/server.js"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production",
-    "STELLAR_NETWORK": "testnet",
-    "API_URL": "https://itsh-wallet-v7riw7q73-vmuhagachi-gmailcoms-projects.vercel.app/api"
-  }
+  ]
 }

@@ -1,31 +1,17 @@
 const express = require('express');
 const path = require('path');
-const cors = require('cors');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Enable CORS for all routes
-app.use(cors());
-
-// Parse JSON bodies
-app.use(express.json());
-
-// Serve static files from the frontend/web-build directory
-app.use(express.static(path.join(__dirname, 'frontend/web-build')));
-
-// Root health check endpoint
-app.get('/api/health', (req, res) => {
-  res.status(200).json({
-    status: 'OK',
-    message: 'iTZS API is operational',
-    timestamp: new Date().toISOString()
-  });
+// Serve static HTML file
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Fallback route - serve index.html for any request not handled above
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK', message: 'Server is running' });
 });
 
 // Start the server
