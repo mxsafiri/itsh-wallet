@@ -57,9 +57,19 @@ app.use('/api/wallet', walletRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/stellar-auth', stellarAuthRoutes);
 
+// Root path health check endpoint
+app.get('/', (req, res) => {
+  res.status(200).json({ status: 'OK', message: 'iTZS Backend API is running' });
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', message: 'iTZS Backend is running' });
+});
+
+// API health check endpoint
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'OK', message: 'iTZS API is operational', timestamp: new Date().toISOString() });
 });
 
 // Error handling middleware
@@ -73,3 +83,6 @@ app.use((err, req, res, next) => {
 
 // Initialize the application
 initializeApp();
+
+// For Vercel serverless deployment
+module.exports = app;
