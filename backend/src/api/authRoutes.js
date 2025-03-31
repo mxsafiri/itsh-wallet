@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const { userDb } = require('../services/databaseService');
-const { createTrustline } = require('../services/stellarService');
+const { createTrustline, fundTestnetAccount } = require('../services/stellarService');
 const StellarSdk = require('stellar-sdk');
 const { encryptData } = require('../utils/encryption');
 const bcrypt = require('bcryptjs');
@@ -45,7 +45,7 @@ router.post('/login', async (req, res) => {
     // For the MVP, we're using a simple PIN comparison
     // In a real app, you would use bcrypt.compare
     // const isMatch = await bcrypt.compare(pin, user.pinHash);
-    const isMatch = pin === user.pin; // Simplified for MVP
+    const isMatch = pin === user.pinHash; // Simplified for MVP
     
     if (!isMatch) {
       return res.status(401).json({ 
@@ -121,8 +121,21 @@ router.post('/register', async (req, res) => {
       });
     }
     
-    // In a real app, we would fund the account and create a trustline
-    // For the MVP, we'll just return success
+    // Fund the account on testnet and create trustline
+    try {
+      // Fund the account on testnet
+      await fundTestnetAccount(userKeypair.publicKey());
+      
+      // Create trustline for iTZS
+      const trustlineResult = await createTrustline(encryptedSecretKey);
+      
+      if (!trustlineResult.success) {
+        console.warn('Failed to create trustline for new user:', trustlineResult.message);
+      }
+    } catch (stellarError) {
+      console.warn('Error during Stellar account setup:', stellarError);
+      // Continue with registration even if Stellar setup fails
+    }
     
     res.status(201).json({
       success: true,

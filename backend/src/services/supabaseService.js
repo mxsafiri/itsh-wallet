@@ -61,29 +61,29 @@ class SupabaseService {
   async createMockUsers() {
     const mockUsers = [
       {
-        phone_number: '+255123456789',
+        phone: '+255123456789',
         stellar_public_key: 'MOCK_PUBLIC_KEY_255123456789',
-        pin_hash: '$2a$10$abcdefghijklmnopqrstuvwxyzABCDEF', // Hashed version of "1234"
+        pin: '$2a$10$abcdefghijklmnopqrstuvwxyzABCDEF', // Hashed version of "1234"
       },
       {
-        phone_number: '+255987654321',
+        phone: '+255987654321',
         stellar_public_key: 'MOCK_PUBLIC_KEY_255987654321',
-        pin_hash: '$2a$10$abcdefghijklmnopqrstuvwxyzABCDEF',
+        pin: '$2a$10$abcdefghijklmnopqrstuvwxyzABCDEF',
       },
       {
-        phone_number: '+255111222333',
+        phone: '+255111222333',
         stellar_public_key: 'MOCK_PUBLIC_KEY_255111222333',
-        pin_hash: '$2a$10$abcdefghijklmnopqrstuvwxyzABCDEF',
+        pin: '$2a$10$abcdefghijklmnopqrstuvwxyzABCDEF',
       },
       {
-        phone_number: '+255444555666',
+        phone: '+255444555666',
         stellar_public_key: 'MOCK_PUBLIC_KEY_255444555666',
-        pin_hash: '$2a$10$abcdefghijklmnopqrstuvwxyzABCDEF',
+        pin: '$2a$10$abcdefghijklmnopqrstuvwxyzABCDEF',
       },
       {
-        phone_number: '+255777888999',
+        phone: '+255777888999',
         stellar_public_key: 'MOCK_PUBLIC_KEY_255777888999',
-        pin_hash: '$2a$10$abcdefghijklmnopqrstuvwxyzABCDEF',
+        pin: '$2a$10$abcdefghijklmnopqrstuvwxyzABCDEF',
       },
     ];
 
@@ -92,7 +92,7 @@ class SupabaseService {
       const { data: existingUser } = await supabaseAdmin
         .from('users')
         .select('id')
-        .eq('phone_number', user.phone_number)
+        .eq('phone', user.phone)
         .single();
 
       if (!existingUser) {
@@ -102,9 +102,9 @@ class SupabaseService {
           .insert([user]);
 
         if (error) {
-          console.error(`Error creating mock user ${user.phone_number}:`, error.message);
+          console.error(`Error creating mock user ${user.phone}:`, error.message);
         } else {
-          console.log(`Created mock user: ${user.phone_number}`);
+          console.log(`Created mock user: ${user.phone}`);
         }
       }
     }
@@ -141,7 +141,7 @@ class SupabaseService {
     const { data, error } = await supabaseAdmin
       .from('users')
       .select('*')
-      .eq('phone_number', phoneNumber)
+      .eq('phone', phoneNumber)
       .single();
 
     if (error) {
@@ -151,9 +151,9 @@ class SupabaseService {
 
     return {
       id: data.id,
-      phoneNumber: data.phone_number,
+      phoneNumber: data.phone,
       stellarPublicKey: data.stellar_public_key,
-      pinHash: data.pin_hash,
+      pinHash: data.pin,
       createdAt: data.created_at
     };
   }
@@ -170,9 +170,11 @@ class SupabaseService {
     const { data, error } = await supabaseAdmin
       .from('users')
       .insert([{
-        phone_number: phoneNumber,
-        pin_hash: pinHash,
-        stellar_public_key: stellarPublicKey
+        phone: phoneNumber,
+        pin: pinHash,
+        stellar_public_key: stellarPublicKey,
+        iTZS_amount: 0, // Initialize with zero balance
+        stellar_key: '' // Empty string for stellar key
       }])
       .select()
       .single();
@@ -184,7 +186,7 @@ class SupabaseService {
 
     return {
       id: data.id,
-      phoneNumber: data.phone_number,
+      phoneNumber: data.phone,
       stellarPublicKey: data.stellar_public_key,
       createdAt: data.created_at
     };
@@ -245,8 +247,8 @@ class SupabaseService {
         status,
         stellar_transaction_id,
         created_at,
-        senders:sender_id(phone_number),
-        recipients:recipient_id(phone_number)
+        senders:sender_id(phone),
+        recipients:recipient_id(phone)
       `)
       .or(`sender_id.eq.${userId},recipient_id.eq.${userId}`)
       .order('created_at', { ascending: false })
@@ -261,8 +263,8 @@ class SupabaseService {
       id: tx.id,
       senderId: tx.sender_id,
       recipientId: tx.recipient_id,
-      senderPhone: tx.senders?.phone_number,
-      recipientPhone: tx.recipients?.phone_number,
+      senderPhone: tx.senders?.phone,
+      recipientPhone: tx.recipients?.phone,
       amount: tx.amount,
       type: tx.transaction_type,
       status: tx.status,
