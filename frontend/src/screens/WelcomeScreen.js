@@ -37,11 +37,10 @@ const WelcomeScreen = ({ navigation }) => {
           </View>
 
           <View style={styles.illustrationContainer}>
-            <Image
-              source={require('../../assets/wallet-illustration.png')}
-              style={styles.illustration}
-              resizeMode="contain"
-            />
+            {/* Temporarily replaced image with an icon until we have the proper illustration */}
+            <View style={styles.placeholderIllustration}>
+              <Ionicons name="wallet-outline" size={120} color="#FFFFFF" />
+            </View>
           </View>
 
           <View style={styles.featuresContainer}>
@@ -134,9 +133,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  illustration: {
+  placeholderIllustration: {
     width: '100%',
     height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   featuresContainer: {
     width: '100%',
