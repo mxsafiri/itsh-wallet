@@ -5,15 +5,19 @@ import {
   StyleSheet,
   TouchableOpacity,
   Share,
+  ScrollView,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { Button } from 'react-native-paper';
+import { Button, Card, Divider } from 'react-native-paper';
+import * as Clipboard from 'expo-clipboard';
 
 const TransactionSuccessScreen = ({ navigation, route }) => {
-  const { amount, recipient, fee, transactionId } = route.params || {};
-  const currentDate = new Date();
+  const { amount, recipient, transactionId, date } = route.params || {};
+  const fee = route.params?.fee || '0.000001';
+  const currentDate = date ? new Date(date) : new Date();
 
   // Format date
   const formatDate = (date) => {
@@ -30,16 +34,17 @@ const TransactionSuccessScreen = ({ navigation, route }) => {
   const handleShare = async () => {
     try {
       const message = `Transaction Successful!
-Amount: ${amount.toLocaleString()} iTZS
-To: ${recipient}
+Amount: ${parseFloat(amount).toLocaleString()} iTZS
+To: ${recipient.name || recipient.phoneNumber}
 Date: ${formatDate(currentDate)}
-Fee: ${fee || '0.000001'} XLM
+Fee: ${fee} XLM
 Transaction ID: ${transactionId}
 
 Powered by iTZS mobile wallet`;
       
       await Share.share({
         message,
+        title: 'iTZS Transaction Details',
       });
     } catch (error) {
       console.error('Error sharing transaction details:', error);
@@ -62,10 +67,26 @@ Powered by iTZS mobile wallet`;
     });
   };
 
+  // Copy transaction ID to clipboard
+  const copyTransactionId = async () => {
+    try {
+      await Clipboard.setStringAsync(transactionId);
+      alert('Transaction ID copied to clipboard');
+    } catch (error) {
+      console.error('Error copying to clipboard:', error);
+    }
+  };
+
+  // View transaction on Stellar explorer
+  const viewOnExplorer = () => {
+    const url = `https://stellar.expert/explorer/testnet/tx/${transactionId}`;
+    Linking.openURL(url).catch(err => console.error('Error opening URL:', err));
+  };
+
   return (
-    <LinearGradient colors={['#0A2463', '#1E3A8A']} style={styles.gradient}>
+    <LinearGradient colors={['#00A86B', '#008C5A']} style={styles.gradient}>
       <SafeAreaView style={styles.container}>
-        <View style={styles.content}>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.successIconContainer}>
             <View style={styles.successCircle}>
               <Ionicons name="checkmark" size={64} color="#FFFFFF" />
@@ -76,45 +97,65 @@ Powered by iTZS mobile wallet`;
           
           <View style={styles.amountContainer}>
             <Text style={styles.amountText}>
-              {amount?.toLocaleString() || '0'} iTZS
+              {parseFloat(amount).toLocaleString()} iTZS
             </Text>
             <Text style={styles.recipientText}>
-              sent to {recipient}
+              sent to {recipient.name || recipient.phoneNumber}
             </Text>
           </View>
 
-          <View style={styles.detailsCard}>
-            <View style={styles.detailItem}>
-              <Text style={styles.detailLabel}>Date</Text>
-              <Text style={styles.detailValue}>{formatDate(currentDate)}</Text>
-            </View>
+          <Card style={styles.detailsCard}>
+            <Card.Content>
+              <View style={styles.detailItem}>
+                <Text style={styles.detailLabel}>Date</Text>
+                <Text style={styles.detailValue}>{formatDate(currentDate)}</Text>
+              </View>
 
-            <View style={styles.separator} />
+              <Divider style={styles.separator} />
 
-            <View style={styles.detailItem}>
-              <Text style={styles.detailLabel}>Type</Text>
-              <Text style={styles.detailValue}>Send</Text>
-            </View>
+              <View style={styles.detailItem}>
+                <Text style={styles.detailLabel}>Type</Text>
+                <Text style={styles.detailValue}>Send</Text>
+              </View>
 
-            <View style={styles.separator} />
+              <Divider style={styles.separator} />
 
-            <View style={styles.detailItem}>
-              <Text style={styles.detailLabel}>Amount</Text>
-              <Text style={styles.detailValue}>{amount?.toLocaleString() || '0'} iTZS</Text>
-            </View>
+              <View style={styles.detailItem}>
+                <Text style={styles.detailLabel}>Amount</Text>
+                <Text style={styles.detailValue}>{parseFloat(amount).toLocaleString()} iTZS</Text>
+              </View>
 
-            <View style={styles.separator} />
+              <Divider style={styles.separator} />
 
-            <View style={styles.detailItem}>
-              <Text style={styles.detailLabel}>Fee</Text>
-              <Text style={styles.detailValue}>{fee || '0.000001'} XLM</Text>
-            </View>
-          </View>
+              <View style={styles.detailItem}>
+                <Text style={styles.detailLabel}>Fee</Text>
+                <Text style={styles.detailValue}>{fee} XLM</Text>
+              </View>
+
+              <Divider style={styles.separator} />
+
+              <View style={styles.detailItem}>
+                <Text style={styles.detailLabel}>Transaction ID</Text>
+                <View style={styles.transactionIdContainer}>
+                  <Text style={styles.transactionIdText} numberOfLines={1} ellipsizeMode="middle">
+                    {transactionId}
+                  </Text>
+                  <TouchableOpacity onPress={copyTransactionId} style={styles.copyButton}>
+                    <Ionicons name="copy-outline" size={18} color="#00A86B" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Card.Content>
+          </Card>
 
           <View style={styles.infoContainer}>
             <Text style={styles.infoText}>
               Your transaction has been processed on the Stellar blockchain with near-zero fees.
             </Text>
+            <TouchableOpacity onPress={viewOnExplorer} style={styles.viewExplorerButton}>
+              <Text style={styles.viewExplorerText}>View on Stellar Explorer</Text>
+              <Ionicons name="open-outline" size={16} color="#00A86B" />
+            </TouchableOpacity>
           </View>
 
           <View style={styles.buttonContainer}>
@@ -122,30 +163,32 @@ Powered by iTZS mobile wallet`;
               mode="contained"
               onPress={handleShare}
               style={styles.shareButton}
-              labelStyle={styles.buttonText}
-              buttonColor="#00A86B"
               icon="share-variant"
             >
               Share Details
             </Button>
 
             <View style={styles.buttonRow}>
-              <TouchableOpacity
-                style={styles.secondaryButton}
+              <Button
+                mode="outlined"
                 onPress={handleNewTransaction}
+                style={styles.secondaryButton}
+                labelStyle={styles.secondaryButtonText}
               >
-                <Text style={styles.secondaryButtonText}>New Transaction</Text>
-              </TouchableOpacity>
+                New Transaction
+              </Button>
 
-              <TouchableOpacity
-                style={[styles.secondaryButton, styles.homeButton]}
+              <Button
+                mode="outlined"
                 onPress={handleGoHome}
+                style={[styles.secondaryButton, styles.homeButton]}
+                labelStyle={styles.secondaryButtonText}
               >
-                <Text style={styles.secondaryButtonText}>Go to Home</Text>
-              </TouchableOpacity>
+                Go to Home
+              </Button>
             </View>
           </View>
-        </View>
+        </ScrollView>
       </SafeAreaView>
     </LinearGradient>
   );
@@ -158,8 +201,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  content: {
-    flex: 1,
+  scrollContent: {
+    flexGrow: 1,
     padding: 20,
     alignItems: 'center',
   },
@@ -171,7 +214,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -197,53 +240,78 @@ const styles = StyleSheet.create({
     opacity: 0.8,
   },
   detailsCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 10,
-    padding: 20,
     width: '100%',
+    borderRadius: 16,
     marginBottom: 20,
+    elevation: 4,
   },
   detailItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     paddingVertical: 12,
   },
   detailLabel: {
     fontSize: 14,
-    color: '#757575',
+    color: '#555555',
   },
   detailValue: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#212121',
+    color: '#333333',
   },
   separator: {
     height: 1,
-    backgroundColor: '#E0E0E0',
+    backgroundColor: '#EEEEEE',
+  },
+  transactionIdContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    maxWidth: '70%',
+  },
+  transactionIdText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#333333',
+    marginRight: 8,
+  },
+  copyButton: {
+    padding: 4,
   },
   infoContainer: {
+    width: '100%',
     marginBottom: 30,
-    paddingHorizontal: 20,
+    alignItems: 'center',
   },
   infoText: {
     fontSize: 14,
     color: '#FFFFFF',
-    opacity: 0.8,
     textAlign: 'center',
+    marginBottom: 12,
+  },
+  viewExplorerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 8,
+  },
+  viewExplorerText: {
+    fontSize: 14,
+    color: '#FFFFFF',
+    marginRight: 8,
   },
   buttonContainer: {
     width: '100%',
     marginTop: 'auto',
-    marginBottom: 20,
+    paddingBottom: 20,
   },
   shareButton: {
-    marginBottom: 20,
-    paddingVertical: 8,
+    backgroundColor: '#FFFFFF',
+    marginBottom: 16,
     borderRadius: 8,
-  },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
   },
   buttonRow: {
     flexDirection: 'row',
@@ -251,19 +319,14 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     flex: 1,
-    paddingVertical: 12,
-    alignItems: 'center',
-    borderWidth: 1,
     borderColor: '#FFFFFF',
     borderRadius: 8,
   },
-  homeButton: {
-    marginLeft: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  },
   secondaryButtonText: {
     color: '#FFFFFF',
-    fontWeight: 'bold',
+  },
+  homeButton: {
+    marginLeft: 12,
   },
 });
 

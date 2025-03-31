@@ -10,9 +10,10 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import { TextInput, Button } from 'react-native-paper';
+import { TextInput, Button, HelperText } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { AuthContext } from '../../App';
 import { authAPI } from '../services/api';
 
@@ -21,11 +22,37 @@ const LoginScreen = ({ navigation }) => {
   const [pin, setPin] = useState('');
   const [loading, setLoading] = useState(false);
   const [secureTextEntry, setSecureTextEntry] = useState(true);
+  const [errors, setErrors] = useState({});
   const { signIn } = useContext(AuthContext);
 
+  const validatePhoneNumber = () => {
+    // Basic validation for Tanzanian phone numbers
+    const phoneRegex = /^(\+?255|0)[67]\d{8}$/;
+    return phoneRegex.test(phoneNumber);
+  };
+
   const handleLogin = async () => {
-    if (!phoneNumber || !pin) {
-      Alert.alert('Error', 'Please enter both phone number and PIN');
+    // Reset errors
+    setErrors({});
+    
+    // Validate inputs
+    if (!phoneNumber) {
+      setErrors(prev => ({ ...prev, phoneNumber: 'Phone number is required' }));
+      return;
+    }
+
+    if (!validatePhoneNumber()) {
+      setErrors(prev => ({ ...prev, phoneNumber: 'Please enter a valid Tanzanian phone number' }));
+      return;
+    }
+
+    if (!pin) {
+      setErrors(prev => ({ ...prev, pin: 'PIN is required' }));
+      return;
+    }
+
+    if (pin.length !== 4) {
+      setErrors(prev => ({ ...prev, pin: 'PIN must be 4 digits' }));
       return;
     }
 
@@ -41,7 +68,7 @@ const LoginScreen = ({ navigation }) => {
         await signIn(response.user);
         console.log('User signed in successfully');
       } else {
-        Alert.alert('Error', response.message || 'Login failed');
+        Alert.alert('Login Failed', response.message || 'Invalid credentials');
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -67,7 +94,7 @@ const LoginScreen = ({ navigation }) => {
         await signIn(response.user);
         console.log('User signed in successfully');
       } else {
-        Alert.alert('Error', response.message || 'Demo login failed');
+        Alert.alert('Demo Login Failed', response.message || 'Could not login with demo account');
       }
     } catch (error) {
       console.error('Quick login error:', error);
@@ -79,7 +106,7 @@ const LoginScreen = ({ navigation }) => {
 
   return (
     <LinearGradient
-      colors={['#0A2463', '#1E3A8A']}
+      colors={['#00A86B', '#008C5A']}
       style={styles.gradient}
     >
       <SafeAreaView style={styles.container}>
@@ -87,17 +114,35 @@ const LoginScreen = ({ navigation }) => {
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.keyboardAvoidingView}
         >
-          <ScrollView contentContainerStyle={styles.scrollView}>
+          <ScrollView 
+            contentContainerStyle={styles.scrollView}
+            keyboardShouldPersistTaps="handled"
+          >
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => navigation.navigate('Welcome')}
+            >
+              <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+            
             <View style={styles.logoContainer}>
-              <Text style={styles.logoText}>iTZS</Text>
+              <Text style={styles.logoText}>NEDApay</Text>
               <Text style={styles.tagline}>Fast, Secure Payments in Tanzania</Text>
             </View>
 
             <View style={styles.formContainer}>
+              <Text style={styles.headerText}>Welcome Back</Text>
+              <Text style={styles.subHeaderText}>Login to access your NEDApay wallet</Text>
+              
               <TextInput
                 label="Phone Number"
                 value={phoneNumber}
-                onChangeText={setPhoneNumber}
+                onChangeText={text => {
+                  setPhoneNumber(text);
+                  if (errors.phoneNumber) {
+                    setErrors(prev => ({ ...prev, phoneNumber: null }));
+                  }
+                }}
                 style={styles.input}
                 keyboardType="phone-pad"
                 mode="outlined"
@@ -106,12 +151,23 @@ const LoginScreen = ({ navigation }) => {
                 textColor="#FFFFFF"
                 left={<TextInput.Icon icon="phone" color="#FFFFFF" />}
                 theme={{ colors: { placeholder: '#FFFFFF80', text: '#FFFFFF' } }}
+                error={!!errors.phoneNumber}
               />
+              {errors.phoneNumber && (
+                <HelperText type="error" visible={true} style={styles.errorText}>
+                  {errors.phoneNumber}
+                </HelperText>
+              )}
 
               <TextInput
                 label="PIN"
                 value={pin}
-                onChangeText={setPin}
+                onChangeText={text => {
+                  setPin(text);
+                  if (errors.pin) {
+                    setErrors(prev => ({ ...prev, pin: null }));
+                  }
+                }}
                 secureTextEntry={secureTextEntry}
                 style={styles.input}
                 keyboardType="numeric"
@@ -129,7 +185,13 @@ const LoginScreen = ({ navigation }) => {
                   />
                 }
                 theme={{ colors: { placeholder: '#FFFFFF80', text: '#FFFFFF' } }}
+                error={!!errors.pin}
               />
+              {errors.pin && (
+                <HelperText type="error" visible={true} style={styles.errorText}>
+                  {errors.pin}
+                </HelperText>
+              )}
 
               <Button
                 mode="contained"
@@ -138,7 +200,7 @@ const LoginScreen = ({ navigation }) => {
                 disabled={loading}
                 style={styles.loginButton}
                 labelStyle={styles.buttonText}
-                buttonColor="#00A86B"
+                buttonColor="#FFFFFF"
               >
                 Login
               </Button>
@@ -156,17 +218,20 @@ const LoginScreen = ({ navigation }) => {
                 onPress={() => navigation.navigate('StellarLogin')}
                 disabled={loading}
               >
+                <Ionicons name="star" size={16} color="#FFFFFF" style={styles.stellarIcon} />
                 <Text style={styles.stellarAuthText}>Sign in with Stellar Authentication</Text>
               </TouchableOpacity>
 
               {/* Quick login for demo purposes */}
-              <TouchableOpacity
-                style={styles.demoButton}
-                onPress={handleQuickLogin}
-                disabled={loading}
-              >
-                <Text style={styles.demoButtonText}>Demo Login</Text>
-              </TouchableOpacity>
+              {__DEV__ && (
+                <TouchableOpacity
+                  style={styles.demoButton}
+                  onPress={handleQuickLogin}
+                  disabled={loading}
+                >
+                  <Text style={styles.demoButtonText}>Demo Login</Text>
+                </TouchableOpacity>
+              )}
             </View>
 
             <View style={styles.footer}>
@@ -199,29 +264,53 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 20,
   },
+  backButton: {
+    marginTop: 10,
+    marginBottom: 10,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   logoContainer: {
     alignItems: 'center',
-    marginTop: 60,
     marginBottom: 40,
   },
   logoText: {
     fontSize: 48,
     fontWeight: 'bold',
     color: '#FFFFFF',
-    marginBottom: 10,
+    letterSpacing: 2,
   },
   tagline: {
     fontSize: 16,
     color: '#FFFFFF',
-    textAlign: 'center',
+    opacity: 0.9,
+    marginTop: 5,
   },
   formContainer: {
     width: '100%',
     marginBottom: 40,
   },
+  headerText: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 10,
+  },
+  subHeaderText: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    opacity: 0.8,
+    marginBottom: 30,
+  },
   input: {
-    marginBottom: 16,
+    marginBottom: 8,
     backgroundColor: 'transparent',
+  },
+  errorText: {
+    color: '#FFCCCC',
+    marginBottom: 8,
   },
   loginButton: {
     marginTop: 24,
@@ -231,6 +320,7 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 16,
     fontWeight: 'bold',
+    color: '#00A86B',
   },
   registerContainer: {
     flexDirection: 'row',
@@ -239,28 +329,41 @@ const styles = StyleSheet.create({
   },
   registerText: {
     color: '#FFFFFF',
+    opacity: 0.8,
     marginRight: 5,
   },
   registerLink: {
-    color: '#00A86B',
+    color: '#FFFFFF',
     fontWeight: 'bold',
   },
   stellarAuthContainer: {
-    marginTop: 15,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 30,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#FFFFFF50',
+    borderRadius: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  stellarIcon: {
+    marginRight: 8,
   },
   stellarAuthText: {
     color: '#FFFFFF',
-    fontSize: 14,
-    textDecorationLine: 'underline',
+    fontWeight: '500',
   },
   demoButton: {
-    marginTop: 40,
     alignItems: 'center',
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 8,
   },
   demoButtonText: {
-    color: '#FFFFFF80',
-    fontSize: 14,
+    color: '#FFFFFF',
+    opacity: 0.8,
   },
   footer: {
     alignItems: 'center',
@@ -268,11 +371,12 @@ const styles = StyleSheet.create({
   },
   footerText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontWeight: 'bold',
     marginBottom: 5,
   },
   footerSubText: {
-    color: '#FFFFFF80',
+    color: '#FFFFFF',
+    opacity: 0.7,
     fontSize: 12,
   },
 });

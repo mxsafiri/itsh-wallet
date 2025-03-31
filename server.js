@@ -24,7 +24,7 @@ app.get('/health', (req, res) => {
 
 // API health check endpoint
 app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'OK', message: 'iTZS API is operational', timestamp: new Date().toISOString() });
+  res.status(200).json({ status: 'OK', message: 'NEDApay API is operational', timestamp: new Date().toISOString() });
 });
 
 // Mock Stellar authentication endpoints
@@ -39,7 +39,7 @@ app.post('/api/stellar-auth/challenge', (req, res) => {
   }
   
   // Generate a mock challenge
-  const challenge = `iTZS auth challenge for ${phoneNumber} at ${new Date().toISOString()}`;
+  const challenge = `NEDApay auth challenge for ${phoneNumber} at ${new Date().toISOString()}`;
   
   res.json({
     success: true,
