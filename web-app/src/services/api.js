@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create axios instance with base URL
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL: import.meta.env.VITE_API_URL || 'https://itsh-wallet-2kwkxrggz-vmuhagachi-gmailcoms-projects.vercel.app/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -29,6 +29,7 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
+    console.error('API Error:', error);
     // Handle 401 Unauthorized errors
     if (error.response && error.response.status === 401) {
       // Clear local storage and reload page
