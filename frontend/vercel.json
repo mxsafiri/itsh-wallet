@@ -6,7 +6,7 @@
       "use": "@vercel/static-build",
       "config": {
         "distDir": "web-build",
-        "installCommand": "npm install --legacy-peer-deps"
+        "installCommand": "npm install --legacy-peer-deps --force"
       }
     }
   ],
@@ -20,6 +20,7 @@
     }
   ],
   "env": {
-    "API_URL": "https://itsh-wallet.vercel.app/api"
+    "API_URL": "https://itsh-wallet.vercel.app/api",
+    "NODE_OPTIONS": "--openssl-legacy-provider"
   }
 }
