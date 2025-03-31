@@ -25,8 +25,32 @@
       }
     },
     {
+      "src": "/static/(.*)",
+      "dest": "frontend/web-build/static/$1"
+    },
+    {
+      "src": "/favicon.ico",
+      "dest": "frontend/web-build/favicon.ico"
+    },
+    {
+      "src": "/asset-manifest.json",
+      "dest": "frontend/web-build/asset-manifest.json"
+    },
+    {
+      "src": "/manifest.json",
+      "dest": "frontend/web-build/manifest.json"
+    },
+    {
+      "src": "/(.*).png",
+      "dest": "frontend/web-build/$1.png"
+    },
+    {
+      "src": "/(.*).js",
+      "dest": "frontend/web-build/$1.js"
+    },
+    {
       "src": "/(.*)",
-      "dest": "frontend/$1"
+      "dest": "frontend/web-build/index.html"
     }
   ],
   "env": {
