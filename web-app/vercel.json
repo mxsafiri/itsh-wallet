@@ -21,6 +21,6 @@
     }
   ],
   "env": {
-    "VITE_API_URL": "https://itsh-wallet-2kwkxrggz-vmuhagachi-gmailcoms-projects.vercel.app/api"
+    "VITE_API_URL": "https://itsh-wallet.vercel.app/api"
   }
 }
