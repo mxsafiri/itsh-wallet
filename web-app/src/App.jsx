@@ -16,7 +16,16 @@ import SettingsScreen from './screens/SettingsScreen';
 
 // Protected route component
 const ProtectedRoute = ({ children }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  
+  // Show loading indicator while auth state is being determined
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-green-600">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+      </div>
+    );
+  }
   
   if (!user) {
     return <Navigate to="/login" replace />;
@@ -27,7 +36,16 @@ const ProtectedRoute = ({ children }) => {
 
 // Public route component (redirects to home if already logged in)
 const PublicRoute = ({ children }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  
+  // Show loading indicator while auth state is being determined
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-green-600">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+      </div>
+    );
+  }
   
   if (user) {
     return <Navigate to="/home" replace />;
@@ -36,10 +54,26 @@ const PublicRoute = ({ children }) => {
   return children;
 };
 
+// Not Found component
+const NotFound = () => {
+  return (
+    <div className="flex flex-col items-center justify-center h-screen bg-green-600 text-white p-4">
+      <h1 className="text-3xl font-bold mb-4">Page Not Found</h1>
+      <p className="mb-6">The page you are looking for doesn't exist or has been moved.</p>
+      <button 
+        onClick={() => window.location.href = '/'}
+        className="bg-white text-green-600 font-bold py-2 px-6 rounded-full"
+      >
+        Go to Home
+      </button>
+    </div>
+  );
+};
+
 function App() {
   return (
     <AuthProvider>
-      <Router>
+      <Router basename="/">
         <Routes>
           {/* Public routes */}
           <Route 
@@ -126,7 +160,7 @@ function App() {
           />
           
           {/* Fallback route */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
     </AuthProvider>
