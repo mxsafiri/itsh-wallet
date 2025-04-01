@@ -540,16 +540,16 @@ const HomeScreen = () => {
           transition={{ delay: 0.2, duration: 0.3 }}
         >
           <Link 
-            to="/transactions" 
+            to="/settings" 
             className="flex items-center justify-between w-full p-4 bg-[#1E1E2D] hover:bg-[#252538] text-white rounded-xl transition-all duration-200 border border-gray-800/30"
           >
             <div className="flex items-center">
               <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center mr-3">
-                <FiList className="h-5 w-5 text-blue-400" />
+                <FiSettings className="h-5 w-5 text-blue-400" />
               </div>
               <div>
-                <h4 className="font-medium">View Transactions</h4>
-                <p className="text-xs text-gray-400">See your payment history</p>
+                <h4 className="font-medium">Update Account</h4>
+                <p className="text-xs text-gray-400">Manage your profile and settings</p>
               </div>
             </div>
             <FiChevronRight className="h-5 w-5 text-gray-400" />

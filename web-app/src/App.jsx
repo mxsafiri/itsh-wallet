@@ -20,6 +20,9 @@ import SecurityScreen from './screens/SecurityScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import LearnScreen from './screens/LearnScreen';
 import ServicePaymentScreen from './screens/ServicePaymentScreen';
+import AboutScreen from './screens/AboutScreen';
+import HelpScreen from './screens/HelpScreen';
+import TermsScreen from './screens/TermsScreen';
 
 // Loading component
 const LoadingScreen = () => (
@@ -238,6 +241,32 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <LearnScreen />
+                    </ProtectedRoute>
+                  } 
+                />
+                
+                {/* About & Help routes */}
+                <Route 
+                  path="/about" 
+                  element={
+                    <ProtectedRoute>
+                      <AboutScreen />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/help" 
+                  element={
+                    <ProtectedRoute>
+                      <HelpScreen />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/terms" 
+                  element={
+                    <ProtectedRoute>
+                      <TermsScreen />
                     </ProtectedRoute>
                   } 
                 />
