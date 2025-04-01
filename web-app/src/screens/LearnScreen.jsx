@@ -29,12 +29,12 @@ const LearnScreen = () => {
         },
         {
           heading: 'Simple and Intuitive Process',
-          text: 'Sending money is as easy as a few taps. Enter the recipient's phone number or scan their QR code, enter the amount, confirm with your PIN, and the money is sent instantly.',
+          text: 'Sending money is as easy as a few taps. Enter the recipient\'s phone number or scan their QR code, enter the amount, confirm with your PIN, and the money is sent instantly.',
           image: '/images/simple-process.svg'
         },
         {
           heading: 'Track Your Transfers in Real-Time',
-          text: 'With NEDApay, you can track the status of your transfers in real-time. Get instant notifications when your money is sent, received, or when there's any issue with the transfer.',
+          text: 'With NEDApay, you can track the status of your transfers in real-time. Get instant notifications when your money is sent, received, or when there\'s any issue with the transfer.',
           image: '/images/track-transfers.svg'
         }
       ]
@@ -49,22 +49,22 @@ const LearnScreen = () => {
       content: [
         {
           heading: 'Complete Transparency',
-          text: 'NEDApay is built on the principle of complete transparency. We show you exactly what you're paying for, with no hidden fees or charges buried in the fine print.',
+          text: 'NEDApay is built on the principle of complete transparency. We show you exactly what you\'re paying for, with no hidden fees or charges buried in the fine print.',
           image: '/images/transparency.svg'
         },
         {
           heading: 'Zero Transaction Fees',
-          text: 'We've eliminated transaction fees for domestic transfers. Send money to friends, family, or businesses within Tanzania without paying any fees or charges.',
+          text: 'We\'ve eliminated transaction fees for domestic transfers. Send money to friends, family, or businesses within Tanzania without paying any fees or charges.',
           image: '/images/zero-fees.svg'
         },
         {
           heading: 'No Minimum Balance Requirements',
-          text: 'Unlike traditional banks, NEDApay doesn't require you to maintain a minimum balance in your account. You can use our services without worrying about minimum balance fees.',
+          text: 'Unlike traditional banks, NEDApay doesn\'t require you to maintain a minimum balance in your account. You can use our services without worrying about minimum balance fees.',
           image: '/images/no-minimum.svg'
         },
         {
           heading: 'Clear Fee Structure for International Transfers',
-          text: 'For international transfers, we maintain a clear and competitive fee structure. You'll always know exactly what you're paying before you confirm the transfer.',
+          text: 'For international transfers, we maintain a clear and competitive fee structure. You\'ll always know exactly what you\'re paying before you confirm the transfer.',
           image: '/images/fee-structure.svg'
         }
       ]
@@ -89,7 +89,7 @@ const LearnScreen = () => {
         },
         {
           heading: 'Real-Time Fraud Detection',
-          text: 'Our advanced AI-powered system monitors transactions in real-time to detect and prevent fraudulent activities. If we detect any suspicious activity, we'll alert you immediately.',
+          text: 'Our advanced AI-powered system monitors transactions in real-time to detect and prevent fraudulent activities. If we detect any suspicious activity, we\'ll alert you immediately.',
           image: '/images/fraud-detection.svg'
         },
         {
@@ -119,12 +119,12 @@ const LearnScreen = () => {
         },
         {
           heading: 'Low Entry Barriers',
-          text: 'We've eliminated the barriers that traditionally prevent people from accessing financial services. No minimum balance requirements, no complex paperwork, and no need for a physical bank branch.',
+          text: 'We\'ve eliminated the barriers that traditionally prevent people from accessing financial services. No minimum balance requirements, no complex paperwork, and no need for a physical bank branch.',
           image: '/images/low-barriers.svg'
         },
         {
           heading: 'Financial Education',
-          text: 'We're committed to improving financial literacy in Tanzania. Our app includes educational resources to help users make informed financial decisions.',
+          text: 'We\'re committed to improving financial literacy in Tanzania. Our app includes educational resources to help users make informed financial decisions.',
           image: '/images/education.svg'
         }
       ]
