@@ -223,84 +223,83 @@ const getRecentTransactions = (phoneNumber, options = {}) => {
  * @param {string} memo - Optional memo for the transaction
  * @returns {Promise<Object>} Transaction result
  */
-const sendPayment = async (senderPhoneNumber, receiverPhoneNumber, amount, memo = '') => {
-  return new Promise((resolve, reject) => {
-    // Simulate network delay
-    setTimeout(() => {
-      const sender = mockData[senderPhoneNumber];
-      const receiver = mockData[receiverPhoneNumber];
-      
-      if (!sender) {
-        return reject({ error: 'Sender not found' });
-      }
-      
-      if (!receiver) {
-        return reject({ error: 'Receiver not found' });
-      }
-      
-      if (sender.iTZSAmount < amount) {
-        return reject({ error: 'Insufficient funds' });
-      }
-      
-      // Create transaction
-      const txId = uuidv4();
-      const timestamp = new Date();
-      const stellarTxHash = `${Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('')}`;
-      
-      // Create transaction objects
-      const senderTx = {
-        id: txId,
-        amount,
-        currency: 'iTZS',
-        type: 'Payment',
-        status: 'success',
-        timestamp,
-        incoming: false,
-        counterparty: {
-          phoneNumber: receiver.phoneNumber,
-          stellarPublicKey: receiver.stellarPublicKey,
-          name: receiver.name
-        },
-        memo: memo || `Payment to ${receiver.name}`,
-        stellarTxHash
-      };
-      
-      const receiverTx = {
-        id: txId,
-        amount,
-        currency: 'iTZS',
-        type: 'Payment',
-        status: 'success',
-        timestamp,
-        incoming: true,
-        counterparty: {
-          phoneNumber: sender.phoneNumber,
-          stellarPublicKey: sender.stellarPublicKey,
-          name: sender.name
-        },
-        memo: memo || `Payment from ${sender.name}`,
-        stellarTxHash
-      };
-      
-      // Update balances
-      sender.iTZSAmount -= amount;
-      receiver.iTZSAmount += amount;
-      
-      // Add transactions to history
-      sender.recentTransactions.unshift(senderTx);
-      receiver.recentTransactions.unshift(receiverTx);
-      
-      // Save changes
-      saveMockData();
-      
-      // Return transaction details
-      resolve({
-        success: true,
-        transaction: senderTx
-      });
-    }, 1500); // 1.5 second delay to simulate network latency
-  });
-};
+async function sendPayment(senderPhoneNumber, receiverPhoneNumber, amount, memo = '') {
+  console.log('[MOCK] Sending payment:', { senderPhoneNumber, receiverPhoneNumber, amount, memo });
+  
+  // Simulate network delay and transaction processing
+  await new Promise(resolve => setTimeout(resolve, 800 + Math.random() * 500));
+  
+  try {
+    // Get sender and receiver data
+    const sender = getUserByPhoneNumber(senderPhoneNumber);
+    const receiver = getUserByPhoneNumber(receiverPhoneNumber);
+    
+    if (!sender) {
+      throw new Error(`Sender with phone number ${senderPhoneNumber} not found`);
+    }
+    
+    if (!receiver) {
+      throw new Error(`Receiver with phone number ${receiverPhoneNumber} not found`);
+    }
+    
+    // Check if sender has enough balance
+    if (sender.iTZSAmount < amount) {
+      throw new Error('Insufficient funds');
+    }
+    
+    // Generate transaction ID
+    const transactionId = uuidv4();
+    const timestamp = new Date().toISOString();
+    
+    // Create transaction objects
+    const senderTransaction = {
+      id: transactionId,
+      type: 'Payment',
+      amount: -amount, // Negative for outgoing
+      timestamp,
+      counterpartyName: receiver.name,
+      counterpartyPhoneNumber: receiver.phoneNumber,
+      memo: memo || 'Payment sent',
+      status: 'Completed',
+      incoming: false
+    };
+    
+    const receiverTransaction = {
+      id: transactionId,
+      type: 'Payment',
+      amount: amount, // Positive for incoming
+      timestamp,
+      counterpartyName: sender.name,
+      counterpartyPhoneNumber: sender.phoneNumber,
+      memo: memo || 'Payment received',
+      status: 'Completed',
+      incoming: true
+    };
+    
+    // Update balances
+    sender.iTZSAmount -= amount;
+    receiver.iTZSAmount += amount;
+    
+    // Add transactions to history
+    sender.recentTransactions.unshift(senderTransaction);
+    receiver.recentTransactions.unshift(receiverTransaction);
+    
+    // Save updated data
+    saveMockData();
+    
+    console.log('[MOCK] Payment successful:', { transactionId, amount });
+    
+    // Return transaction details
+    return {
+      success: true,
+      transaction: senderTransaction,
+      newBalance: sender.iTZSAmount
+    };
+  } catch (error) {
+    console.error('[MOCK] Payment failed:', error.message);
+    throw error;
+  }
+}
 
 /**
  * Request payment from another user

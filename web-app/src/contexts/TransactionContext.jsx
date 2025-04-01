@@ -43,6 +43,8 @@ export const TransactionProvider = ({ children }) => {
     setIsLoading(true);
     try {
       console.log('[TRANSACTION] Getting transactions for:', user.phoneNumber);
+      // Add a small delay to simulate network latency and prevent UI jank
+      await new Promise(resolve => setTimeout(resolve, 300));
       const txs = mockTransactionService.getRecentTransactions(user.phoneNumber);
       console.log('[TRANSACTION] Loaded transactions:', txs);
       setTransactions(txs);
@@ -59,6 +61,8 @@ export const TransactionProvider = ({ children }) => {
     if (!user?.phoneNumber) return;
     
     try {
+      // Add a small delay to simulate network latency and prevent UI jank
+      await new Promise(resolve => setTimeout(resolve, 200));
       const txs = mockTransactionService.getRecentTransactions(user.phoneNumber, {
         incoming: false,
         limit: 20
