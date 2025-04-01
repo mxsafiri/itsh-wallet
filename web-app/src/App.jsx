@@ -1,6 +1,9 @@
 import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { TransactionProvider } from './contexts/TransactionContext';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // Import screens
 import WelcomeScreen from './screens/WelcomeScreen';
@@ -72,98 +75,112 @@ const NotFound = () => {
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Suspense fallback={<LoadingScreen />}>
-          <Routes>
-            {/* Public routes */}
-            <Route 
-              path="/" 
-              element={
-                <PublicRoute>
-                  <WelcomeScreen />
-                </PublicRoute>
-              } 
-            />
-            <Route 
-              path="/login" 
-              element={
-                <PublicRoute>
-                  <LoginScreen />
-                </PublicRoute>
-              } 
-            />
-            <Route 
-              path="/register" 
-              element={
-                <PublicRoute>
-                  <RegisterScreen />
-                </PublicRoute>
-              } 
-            />
-            
-            {/* Protected routes */}
-            <Route 
-              path="/home" 
-              element={
-                <ProtectedRoute>
-                  <HomeScreen />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/send" 
-              element={
-                <ProtectedRoute>
-                  <SendScreen />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/receive" 
-              element={
-                <ProtectedRoute>
-                  <ReceiveScreen />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/scan" 
-              element={
-                <ProtectedRoute>
-                  <ScanScreen />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/transactions" 
-              element={
-                <ProtectedRoute>
-                  <TransactionHistoryScreen />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/security" 
-              element={
-                <ProtectedRoute>
-                  <SecurityScreen />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/settings" 
-              element={
-                <ProtectedRoute>
-                  <SettingsScreen />
-                </ProtectedRoute>
-              } 
-            />
-            
-            {/* Fallback route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Suspense>
-      </Router>
+      <TransactionProvider>
+        <Router>
+          <Suspense fallback={<LoadingScreen />}>
+            <Routes>
+              {/* Public routes */}
+              <Route 
+                path="/" 
+                element={
+                  <PublicRoute>
+                    <WelcomeScreen />
+                  </PublicRoute>
+                } 
+              />
+              <Route 
+                path="/login" 
+                element={
+                  <PublicRoute>
+                    <LoginScreen />
+                  </PublicRoute>
+                } 
+              />
+              <Route 
+                path="/register" 
+                element={
+                  <PublicRoute>
+                    <RegisterScreen />
+                  </PublicRoute>
+                } 
+              />
+              
+              {/* Protected routes */}
+              <Route 
+                path="/home" 
+                element={
+                  <ProtectedRoute>
+                    <HomeScreen />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/send" 
+                element={
+                  <ProtectedRoute>
+                    <SendScreen />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/receive" 
+                element={
+                  <ProtectedRoute>
+                    <ReceiveScreen />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/scan" 
+                element={
+                  <ProtectedRoute>
+                    <ScanScreen />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/transactions" 
+                element={
+                  <ProtectedRoute>
+                    <TransactionHistoryScreen />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/security" 
+                element={
+                  <ProtectedRoute>
+                    <SecurityScreen />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/settings" 
+                element={
+                  <ProtectedRoute>
+                    <SettingsScreen />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Fallback route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+        </Router>
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="dark"
+        />
+      </TransactionProvider>
     </AuthProvider>
   );
 }
