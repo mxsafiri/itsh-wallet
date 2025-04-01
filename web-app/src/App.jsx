@@ -195,7 +195,7 @@ function App() {
                   } 
                 />
                 <Route 
-                  path="/services" 
+                  path="/service-payment" 
                   element={
                     <ProtectedRoute>
                       <ServicePaymentScreen />

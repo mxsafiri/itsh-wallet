@@ -14,7 +14,7 @@ import {
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
 } from 'recharts';
-
+import Logo from '../components/Logo';
 const HomeScreen = () => {
   const { user, logout } = useAuth();
   const { 
@@ -149,8 +149,8 @@ const HomeScreen = () => {
       description: "Send money instantly to anyone in Tanzania",
       descriptionSwahili: "Tuma pesa mara moja kwa mtu yeyote",
       icon: <FiSend className="h-8 w-8" />,
-      color: "from-blue-500/90 to-blue-600/90",
-      textColor: "text-blue-100",
+      color: "from-green-500/90 to-green-600/90",
+      textColor: "text-green-100",
       learnPath: "send-money"
     },
     {
@@ -171,8 +171,8 @@ const HomeScreen = () => {
       description: "Advanced security for your money",
       descriptionSwahili: "Usalama wa hali ya juu",
       icon: <FiLock className="h-8 w-8" />,
-      color: "from-purple-500/90 to-purple-600/90",
-      textColor: "text-purple-100",
+      color: "from-green-500/90 to-green-600/90",
+      textColor: "text-green-100",
       learnPath: "security"
     },
     {
@@ -182,8 +182,8 @@ const HomeScreen = () => {
       description: "Banking for all Tanzanians",
       descriptionSwahili: "Huduma za benki kwa wote",
       icon: <FiUsers className="h-8 w-8" />,
-      color: "from-yellow-500/90 to-yellow-600/90",
-      textColor: "text-yellow-100",
+      color: "from-green-500/90 to-green-600/90",
+      textColor: "text-green-100",
       learnPath: "inclusion"
     }
   ];
@@ -217,39 +217,39 @@ const HomeScreen = () => {
         <div className="p-5">
           <div className="grid grid-cols-4 gap-4">
             <motion.div 
-              className={`flex flex-col items-center p-3 rounded-xl ${activeNav === 'home' ? 'bg-blue-500/20' : 'bg-[#1E1E2D]'}`}
+              className={`flex flex-col items-center p-3 rounded-xl ${activeNav === 'home' ? 'bg-green-500/20' : 'bg-[#1E1E2D]'}`}
               whileTap={{ scale: 0.9 }}
               onClick={() => handleNavClick('home')}
             >
-              <FiHome className={`h-6 w-6 ${activeNav === 'home' ? 'text-blue-400' : 'text-gray-400'}`} />
-              <span className={`text-xs mt-1 font-medium ${activeNav === 'home' ? 'text-blue-400' : 'text-gray-400'}`}>Home</span>
+              <FiHome className={`h-6 w-6 ${activeNav === 'home' ? 'text-green-400' : 'text-gray-400'}`} />
+              <span className={`text-xs mt-1 font-medium ${activeNav === 'home' ? 'text-green-400' : 'text-gray-400'}`}>Home</span>
             </motion.div>
             
             <motion.div 
-              className={`flex flex-col items-center p-3 rounded-xl ${activeNav === 'transactions' ? 'bg-blue-500/20' : 'bg-[#1E1E2D]'}`}
+              className={`flex flex-col items-center p-3 rounded-xl ${activeNav === 'transactions' ? 'bg-green-500/20' : 'bg-[#1E1E2D]'}`}
               whileTap={{ scale: 0.9 }}
               onClick={() => handleNavClick('transactions')}
             >
-              <FiList className={`h-6 w-6 ${activeNav === 'transactions' ? 'text-blue-400' : 'text-gray-400'}`} />
-              <span className={`text-xs mt-1 font-medium ${activeNav === 'transactions' ? 'text-blue-400' : 'text-gray-400'}`}>History</span>
+              <FiList className={`h-6 w-6 ${activeNav === 'transactions' ? 'text-green-400' : 'text-gray-400'}`} />
+              <span className={`text-xs mt-1 font-medium ${activeNav === 'transactions' ? 'text-green-400' : 'text-gray-400'}`}>History</span>
             </motion.div>
             
             <motion.div 
-              className={`flex flex-col items-center p-3 rounded-xl ${activeNav === 'security' ? 'bg-blue-500/20' : 'bg-[#1E1E2D]'}`}
+              className={`flex flex-col items-center p-3 rounded-xl ${activeNav === 'security' ? 'bg-green-500/20' : 'bg-[#1E1E2D]'}`}
               whileTap={{ scale: 0.9 }}
               onClick={() => handleNavClick('security')}
             >
-              <FiLock className={`h-6 w-6 ${activeNav === 'security' ? 'text-blue-400' : 'text-gray-400'}`} />
-              <span className={`text-xs mt-1 font-medium ${activeNav === 'security' ? 'text-blue-400' : 'text-gray-400'}`}>Security</span>
+              <FiLock className={`h-6 w-6 ${activeNav === 'security' ? 'text-green-400' : 'text-gray-400'}`} />
+              <span className={`text-xs mt-1 font-medium ${activeNav === 'security' ? 'text-green-400' : 'text-gray-400'}`}>Security</span>
             </motion.div>
             
             <motion.div 
-              className={`flex flex-col items-center p-3 rounded-xl ${activeNav === 'settings' ? 'bg-blue-500/20' : 'bg-[#1E1E2D]'}`}
+              className={`flex flex-col items-center p-3 rounded-xl ${activeNav === 'settings' ? 'bg-green-500/20' : 'bg-[#1E1E2D]'}`}
               whileTap={{ scale: 0.9 }}
               onClick={() => handleNavClick('settings')}
             >
-              <FiSettings className={`h-6 w-6 ${activeNav === 'settings' ? 'text-blue-400' : 'text-gray-400'}`} />
-              <span className={`text-xs mt-1 font-medium ${activeNav === 'settings' ? 'text-blue-400' : 'text-gray-400'}`}>Settings</span>
+              <FiSettings className={`h-6 w-6 ${activeNav === 'settings' ? 'text-green-400' : 'text-gray-400'}`} />
+              <span className={`text-xs mt-1 font-medium ${activeNav === 'settings' ? 'text-green-400' : 'text-gray-400'}`}>Settings</span>
             </motion.div>
           </div>
         </div>
@@ -282,10 +282,10 @@ const HomeScreen = () => {
           {/* Simplified background elements with reduced animation */}
           <div className="absolute inset-0 overflow-hidden opacity-50">
             <div 
-              className="absolute top-0 left-0 w-64 h-64 bg-blue-500/10 rounded-full filter blur-3xl"
+              className="absolute top-0 left-0 w-64 h-64 bg-green-500/10 rounded-full filter blur-3xl"
             />
             <div
-              className="absolute bottom-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full filter blur-3xl"
+              className="absolute bottom-0 right-0 w-96 h-96 bg-green-500/10 rounded-full filter blur-3xl"
             />
           </div>
           
@@ -294,15 +294,14 @@ const HomeScreen = () => {
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="bg-blue-500/20 p-2 rounded-xl mr-3"
+                className="bg-green-500/20 p-2 rounded-xl mr-3"
                 onClick={() => navigate('/settings')}
                 style={{ cursor: 'pointer' }}
               >
-                <FiCreditCard className="text-blue-400 h-6 w-6" />
+                <FiCreditCard className="text-green-500 h-6 w-6" />
               </motion.div>
               <div>
-                <h1 className="text-xl font-bold text-white">NEDApay</h1>
-                <div className="px-2 py-1 bg-blue-500/20 rounded-full text-blue-400 text-xs font-medium mt-1">Demo Wallet</div>
+                <Logo size="small" />
               </div>
             </div>
             
@@ -325,12 +324,12 @@ const HomeScreen = () => {
               transition={{ duration: 0.3 }}
             >
               {user?.iTZSAmount?.toLocaleString() || '50,000'}
-              <span className="text-lg ml-2 text-blue-400 font-medium">iTZS</span>
+              <span className="text-lg ml-2 text-green-500 font-medium">iTZS</span>
             </motion.h2>
             
             <motion.button
               onClick={() => setShowBalanceChart(!showBalanceChart)}
-              className="text-blue-400 text-sm mt-3 flex items-center mx-auto font-medium"
+              className="text-green-500 text-sm mt-3 flex items-center mx-auto font-medium"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -355,8 +354,8 @@ const HomeScreen = () => {
                   >
                     <defs>
                       <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8}/>
-                        <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#00A67D" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="#00A67D" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
                     <XAxis 
@@ -383,7 +382,7 @@ const HomeScreen = () => {
                     <Area 
                       type="monotone" 
                       dataKey="balance" 
-                      stroke="#3B82F6" 
+                      stroke="#00A67D" 
                       strokeWidth={2}
                       fillOpacity={1} 
                       fill="url(#colorBalance)" 
@@ -410,7 +409,7 @@ const HomeScreen = () => {
                 className="flex flex-col items-center"
                 onClick={() => navigate('/send')}
               >
-                <div className="w-14 h-14 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 mb-2 shadow-inner shadow-blue-500/5">
+                <div className="w-14 h-14 rounded-full bg-green-500/10 flex items-center justify-center text-green-500 mb-2 shadow-inner shadow-green-500/5">
                   <FiSend className="h-6 w-6" />
                 </div>
                 <span className="text-sm text-gray-300 font-medium">Send</span>
@@ -432,12 +431,12 @@ const HomeScreen = () => {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 className="flex flex-col items-center"
-                onClick={() => navigate('/services')}
+                onClick={() => navigate('/service-payment')}
               >
-                <div className="w-14 h-14 rounded-full bg-yellow-500/10 flex items-center justify-center text-yellow-500 mb-2 shadow-inner shadow-yellow-500/5">
+                <div className="w-14 h-14 rounded-full bg-green-500/10 flex items-center justify-center text-green-500 mb-2 shadow-inner shadow-green-500/5">
                   <FiGlobe className="h-6 w-6" />
                 </div>
-                <span className="text-sm text-gray-300 font-medium">Services</span>
+                <span className="text-sm text-gray-300 font-medium">Pay Bills</span>
               </motion.div>
               
               <motion.div
@@ -446,7 +445,7 @@ const HomeScreen = () => {
                 className="flex flex-col items-center"
                 onClick={() => toast.info('Add funds feature coming soon!', { theme: 'dark' })}
               >
-                <div className="w-14 h-14 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-500 mb-2 shadow-inner shadow-purple-500/5">
+                <div className="w-14 h-14 rounded-full bg-green-500/10 flex items-center justify-center text-green-500 mb-2 shadow-inner shadow-green-500/5">
                   <FiPlus className="h-6 w-6" />
                 </div>
                 <span className="text-sm text-gray-300 font-medium">Add Funds</span>
@@ -522,7 +521,7 @@ const HomeScreen = () => {
               {educationalCards.map((_, index) => (
                 <motion.button
                   key={index}
-                  className={`w-2.5 h-2.5 rounded-full mx-1 ${activeCard === index ? 'bg-blue-500' : 'bg-gray-600'}`}
+                  className={`w-2.5 h-2.5 rounded-full mx-1 ${activeCard === index ? 'bg-green-500' : 'bg-gray-600'}`}
                   onClick={() => handleCardScroll(index)}
                   whileHover={{ scale: 1.2 }}
                   whileTap={{ scale: 0.8 }}
@@ -544,8 +543,8 @@ const HomeScreen = () => {
             className="flex items-center justify-between w-full p-4 bg-[#1E1E2D] hover:bg-[#252538] text-white rounded-xl transition-all duration-200 border border-gray-800/30"
           >
             <div className="flex items-center">
-              <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center mr-3">
-                <FiSettings className="h-5 w-5 text-blue-400" />
+              <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center mr-3">
+                <FiSettings className="h-5 w-5 text-green-500" />
               </div>
               <div>
                 <h4 className="font-medium">Update Account</h4>

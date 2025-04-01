@@ -26,12 +26,12 @@ const ServicePaymentScreen = () => {
   
   // List of available services
   const services = [
-    { id: 'electricity', name: 'Electricity', icon: <FiZap />, color: 'yellow', placeholder: 'Meter Number', prefix: 'TANESCO' },
-    { id: 'water', name: 'Water Bill', icon: <FiDroplet />, color: 'blue', placeholder: 'Account Number', prefix: 'DAWASA' },
+    { id: 'electricity', name: 'Electricity', icon: <FiZap />, color: 'green', placeholder: 'Meter Number', prefix: 'TANESCO' },
+    { id: 'water', name: 'Water Bill', icon: <FiDroplet />, color: 'green', placeholder: 'Account Number', prefix: 'DAWASA' },
     { id: 'internet', name: 'Internet', icon: <FiWifi />, color: 'green', placeholder: 'Account Number', prefix: 'Various' },
-    { id: 'tv', name: 'TV Subscription', icon: <FiTv />, color: 'purple', placeholder: 'Subscription ID', prefix: 'Various' },
-    { id: 'mobile', name: 'Airtime', icon: <FiPhone />, color: 'red', placeholder: 'Phone Number', prefix: 'Various' },
-    { id: 'education', name: 'School Fees', icon: <FiCreditCard />, color: 'blue', placeholder: 'Student ID', prefix: 'Various' },
+    { id: 'tv', name: 'TV Subscription', icon: <FiTv />, color: 'green', placeholder: 'Subscription ID', prefix: 'Various' },
+    { id: 'mobile', name: 'Airtime', icon: <FiPhone />, color: 'green', placeholder: 'Phone Number', prefix: 'Various' },
+    { id: 'education', name: 'School Fees', icon: <FiCreditCard />, color: 'green', placeholder: 'Student ID', prefix: 'Various' },
     { id: 'shopping', name: 'Shopping', icon: <FiShoppingBag />, color: 'green', placeholder: 'Reference Number', prefix: 'Various' }
   ];
   
@@ -177,10 +177,7 @@ const ServicePaymentScreen = () => {
                     whileTap={{ scale: 0.97 }}
                     variants={itemVariants}
                   >
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3`} style={{
-                      backgroundColor: `rgba(var(--color-${service.color}-500), 0.2)`,
-                      color: `rgb(var(--color-${service.color}-500))`
-                    }}>
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 bg-green-500/20 text-green-500`}>
                       {service.icon}
                     </div>
                     <span className="text-sm font-medium text-text">{service.name}</span>
@@ -210,10 +207,7 @@ const ServicePaymentScreen = () => {
               <motion.div variants={itemVariants}>
                 <form onSubmit={handleDetailsSubmit} className="card p-4">
                   <div className="flex items-center mb-6">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center mr-4`} style={{
-                      backgroundColor: `rgba(var(--color-${selectedService.color}-500), 0.2)`,
-                      color: `rgb(var(--color-${selectedService.color}-500))`
-                    }}>
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center mr-4 bg-green-500/20 text-green-500`}>
                       {selectedService.icon}
                     </div>
                     <div>
@@ -244,7 +238,7 @@ const ServicePaymentScreen = () => {
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <FiDollarSign className="h-5 w-5 text-primary" />
+                        <FiDollarSign className="h-5 w-5 text-green-500" />
                       </div>
                       <input
                         type="number"
@@ -284,7 +278,7 @@ const ServicePaymentScreen = () => {
                     </motion.button>
                     <motion.button
                       type="submit"
-                      className="btn btn-primary flex-1"
+                      className="btn btn-green flex-1"
                       disabled={!accountNumber || !amount || loading}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
@@ -316,10 +310,7 @@ const ServicePaymentScreen = () => {
               
               <motion.div variants={itemVariants} className="card p-5">
                 <div className="flex items-center mb-6">
-                  <div className={`w-16 h-16 rounded-full flex items-center justify-center mr-4`} style={{
-                    backgroundColor: `rgba(var(--color-${selectedService.color}-500), 0.2)`,
-                    color: `rgb(var(--color-${selectedService.color}-500))`
-                  }}>
+                  <div className={`w-16 h-16 rounded-full flex items-center justify-center mr-4 bg-green-500/20 text-green-500`}>
                     {selectedService.icon}
                   </div>
                   <div>
@@ -366,12 +357,12 @@ const ServicePaymentScreen = () => {
                   </motion.button>
                   <motion.button
                     onClick={handlePayment}
-                    className="btn btn-primary flex-1"
+                    className="btn btn-green flex-1"
                     disabled={loading}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    Confirm & Pay
+                    Confirm Payment
                   </motion.button>
                 </div>
               </motion.div>
@@ -401,17 +392,22 @@ const ServicePaymentScreen = () => {
                 variants={itemVariants}
               >
                 <motion.div 
-                  className="h-full bg-primary"
+                  className="h-full bg-green-500"
                   initial={{ width: "0%" }}
                   animate={{ width: `${processingProgress}%` }}
                   transition={{ duration: 0.5 }}
                 />
               </motion.div>
               
-              <motion.div 
-                className="w-16 h-16 rounded-full border-4 border-t-primary border-r-primary border-b-transparent border-l-transparent animate-spin mb-6"
-                variants={itemVariants}
-              />
+              <div className="w-20 h-20 mx-auto mb-4 relative">
+                <div className="absolute inset-0 rounded-full bg-green-500/20 animate-pulse"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <svg className="animate-spin h-10 w-10 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                </div>
+              </div>
               
               <motion.p 
                 className="text-text-secondary text-sm"
@@ -432,19 +428,9 @@ const ServicePaymentScreen = () => {
               exit="exit"
               className="h-full flex flex-col items-center justify-center text-center py-6"
             >
-              <motion.div 
-                className="w-24 h-24 rounded-full bg-success/20 text-success flex items-center justify-center mb-6"
-                initial={{ scale: 0.5, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ 
-                  type: "spring",
-                  stiffness: 300,
-                  damping: 20,
-                  delay: 0.2
-                }}
-              >
-                <FiCheck className="h-12 w-12" />
-              </motion.div>
+              <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-green-500/20 flex items-center justify-center">
+                <FiCheck className="h-10 w-10 text-green-500" />
+              </div>
               
               <motion.h2 
                 className="text-2xl font-bold mb-2 text-text"
@@ -496,7 +482,7 @@ const ServicePaymentScreen = () => {
                     setAmount('');
                     setError('');
                   }}
-                  className="btn btn-primary flex-1"
+                  className="btn btn-green flex-1"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   variants={itemVariants}

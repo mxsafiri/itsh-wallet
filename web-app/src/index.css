@@ -7,9 +7,9 @@
 
 :root {
   /* Base colors */
-  --color-primary: #0084FF;
-  --color-primary-dark: #0066CC;
-  --color-primary-light: #33A1FF;
+  --color-primary: #00A67D;
+  --color-primary-dark: #008F6B;
+  --color-primary-light: #33B898;
   --color-secondary: #111827;
   --color-secondary-light: #1F2937;
   --color-accent: #7C3AED;
@@ -47,7 +47,7 @@
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-glow: 0 0 15px rgba(0, 132, 255, 0.5);
+  --shadow-glow: 0 0 15px rgba(0, 166, 125, 0.5);
   
   /* Transitions */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -128,15 +128,19 @@ p {
   
   /* Button styles */
   .btn {
-    @apply px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center justify-center gap-2;
+    @apply px-4 py-3 rounded-xl font-medium transition-all duration-200 flex items-center justify-center;
   }
   
   .btn-primary {
-    @apply bg-primary text-white hover:bg-primary-dark active:bg-primary-dark/90;
+    @apply bg-primary text-white hover:bg-primary/90 active:bg-primary/80;
+  }
+  
+  .btn-green {
+    @apply bg-[#00A67D] text-white hover:bg-[#00A67D]/90 active:bg-[#00A67D]/80;
   }
   
   .btn-secondary {
-    @apply bg-background-card text-text hover:bg-background-hover active:bg-background-hover/90 border border-dark-700/30;
+    @apply bg-background-card-hover text-text-secondary hover:bg-background-card-hover/80 active:bg-background-card-hover/70;
   }
   
   .btn-outline {
