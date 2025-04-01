@@ -1,15 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { formatPhoneNumber, formatPhoneForApi } from '../utils/formatters';
+import logo from '../assets/logo.svg';
 
 const LoginScreen = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [formattedPhoneNumber, setFormattedPhoneNumber] = useState('');
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
+
+  const handlePhoneChange = (e) => {
+    const input = e.target.value.replace(/\D/g, '');
+    setPhoneNumber(input);
+    setFormattedPhoneNumber(formatPhoneNumber(input));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,100 +33,98 @@ const LoginScreen = () => {
       return;
     }
     
-    // Format phone number if needed
-    let formattedPhone = phoneNumber;
-    if (!formattedPhone.startsWith('+')) {
-      formattedPhone = `+${formattedPhone}`;
-    }
-    
-    setLoading(true);
-    setError('');
-    
     try {
+      setError('');
+      setLoading(true);
+      
+      // Format phone number for API request
+      const formattedPhone = formatPhoneForApi(phoneNumber);
+      console.log('Submitting with formatted phone:', formattedPhone);
+      
       const result = await login(formattedPhone, pin);
       
       if (result.success) {
-        navigate('/home');
+        navigate('/dashboard');
       } else {
-        setError(result.message || 'Invalid credentials');
+        setError(result.message || 'Failed to sign in. Please check your credentials.');
       }
     } catch (err) {
-      setError('Login failed. Please try again.');
-      console.error(err);
+      console.error('Login error:', err);
+      setError(err.response?.data?.message || 'Failed to sign in. Please check your credentials.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-primary to-primary-dark text-white p-6">
-      <div className="flex items-center mb-8">
-        <Link to="/" className="text-white">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-        </Link>
-        <h1 className="text-xl font-semibold ml-4">LOGIN</h1>
-      </div>
-
-      {error && (
-        <div className="bg-red-500/80 text-white p-3 rounded-lg mb-6">
-          {error}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="flex-1 flex flex-col">
-        <div className="flex-1">
-          <h2 className="text-2xl font-bold mb-6">Welcome to NEDApay</h2>
-          
-          <div className="mb-6">
-            <label className="block text-white/80 mb-2">Phone Number</label>
-            <div className="flex items-center bg-white/10 rounded-lg p-3 mb-2">
-              <div className="flex items-center mr-2">
-                <img src="https://flagcdn.com/w20/tz.png" alt="Tanzania" className="h-5 mr-2" />
-                <span>+255</span>
-              </div>
-              <input
-                type="tel"
-                placeholder="712 345 678"
-                className="bg-transparent flex-1 outline-none"
-                value={phoneNumber.replace(/^\+255/, '')}
-                onChange={(e) => setPhoneNumber('+255' + e.target.value.replace(/^\+255/, ''))}
-              />
-            </div>
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="w-full max-w-md animate-fade-in">
+        <div className="bg-white rounded-xl shadow-lg p-8">
+          <div className="flex justify-center mb-6">
+            <img src={logo} alt="NEDApay Logo" className="h-16" />
           </div>
           
-          <div className="mb-6">
-            <label className="block text-white/80 mb-2">PIN</label>
-            <div className="bg-white/10 rounded-lg p-3 mb-2">
+          <h2 className="text-2xl font-bold text-center text-secondary mb-6">Welcome Back</h2>
+          
+          {error && (
+            <div className="bg-red-50 text-error p-3 rounded-lg mb-4 text-sm">
+              {error}
+            </div>
+          )}
+          
+          <form onSubmit={handleSubmit}>
+            <div className="mb-4">
+              <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
+                Phone Number
+              </label>
               <input
+                id="phoneNumber"
+                type="tel"
+                value={formattedPhoneNumber}
+                onChange={handlePhoneChange}
+                className="custom-input"
+                placeholder="+255 XXX XXX XXX"
+                disabled={loading}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Enter your Tanzanian phone number (e.g., 0744XXXXXX or +255744XXXXXX)
+              </p>
+            </div>
+            
+            <div className="mb-6">
+              <label htmlFor="pin" className="block text-sm font-medium text-gray-700 mb-1">
+                PIN
+              </label>
+              <input
+                id="pin"
                 type="password"
-                placeholder="Enter your PIN"
-                className="bg-transparent w-full outline-none"
                 value={pin}
                 onChange={(e) => setPin(e.target.value)}
-                maxLength={6}
+                className="custom-input"
+                placeholder="Enter your 4-digit PIN"
+                maxLength={4}
+                disabled={loading}
               />
             </div>
+            
+            <button
+              type="submit"
+              className="w-full custom-button"
+              disabled={loading}
+            >
+              {loading ? 'Signing In...' : 'Sign In'}
+            </button>
+          </form>
+          
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              Don't have an account?{' '}
+              <Link to="/register" className="text-primary font-medium hover:underline">
+                Register
+              </Link>
+            </p>
           </div>
         </div>
-        
-        <button
-          type="submit"
-          className="bg-white text-primary font-semibold py-3 rounded-lg"
-          disabled={loading}
-        >
-          {loading ? 'Processing...' : 'Login'}
-        </button>
-        
-        <div className="mt-6 text-center">
-          <p>Don't have an account? <Link to="/register" className="font-semibold underline">Register</Link></p>
-        </div>
-      </form>
-      
-      <div className="mt-8 text-center">
-        <img src="/logo-white.png" alt="NEDApay" className="h-8 mx-auto" />
-        <p className="mt-2 text-white/70 text-sm">Secure iTZS Wallet</p>
       </div>
     </div>
   );

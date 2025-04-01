@@ -29,15 +29,34 @@ class SupabaseService {
     console.log('Connecting to Supabase database...');
     
     try {
-      // Check connection by fetching a single row from users table
-      // Using admin client to ensure we can access the table regardless of RLS
-      const { data, error } = await supabaseAdmin
+      // First, check if the users table exists
+      const { error: tableError } = await supabaseAdmin
         .from('users')
-        .select('id')
+        .select('phone')
         .limit(1);
       
-      if (error) {
-        console.error('Error connecting to Supabase:', error.message);
+      // If there's an error about the table not existing, try to create it
+      if (tableError && tableError.message.includes('does not exist')) {
+        console.log('Users table does not exist. Attempting to create it...');
+        
+        try {
+          // For local development, we'll use a workaround since we can't create tables via the JS client
+          // In production, tables should be created via Supabase dashboard or migrations
+          
+          // Instead, we'll use SQLite for local development
+          if (process.env.NODE_ENV !== 'production') {
+            console.log('Using SQLite for local development');
+            return true; // SQLite will be handled by databaseService
+          } else {
+            console.error('Supabase tables not set up correctly. Please create the required tables in the Supabase dashboard.');
+            return false;
+          }
+        } catch (createError) {
+          console.error('Failed to create users table:', createError.message);
+          return false;
+        }
+      } else if (tableError) {
+        console.error('Error connecting to Supabase:', tableError.message);
         return false;
       }
       
@@ -64,34 +83,21 @@ class SupabaseService {
         phone: '+255123456789',
         stellar_public_key: 'MOCK_PUBLIC_KEY_255123456789',
         pin: '$2a$10$abcdefghijklmnopqrstuvwxyzABCDEF', // Hashed version of "1234"
+        iTZS_amount: 50000
       },
       {
         phone: '+255987654321',
         stellar_public_key: 'MOCK_PUBLIC_KEY_255987654321',
         pin: '$2a$10$abcdefghijklmnopqrstuvwxyzABCDEF',
-      },
-      {
-        phone: '+255111222333',
-        stellar_public_key: 'MOCK_PUBLIC_KEY_255111222333',
-        pin: '$2a$10$abcdefghijklmnopqrstuvwxyzABCDEF',
-      },
-      {
-        phone: '+255444555666',
-        stellar_public_key: 'MOCK_PUBLIC_KEY_255444555666',
-        pin: '$2a$10$abcdefghijklmnopqrstuvwxyzABCDEF',
-      },
-      {
-        phone: '+255777888999',
-        stellar_public_key: 'MOCK_PUBLIC_KEY_255777888999',
-        pin: '$2a$10$abcdefghijklmnopqrstuvwxyzABCDEF',
-      },
+        iTZS_amount: 50000
+      }
     ];
 
     for (const user of mockUsers) {
       // Check if user already exists
       const { data: existingUser } = await supabaseAdmin
         .from('users')
-        .select('id')
+        .select('phone')
         .eq('phone', user.phone)
         .single();
 
@@ -108,27 +114,6 @@ class SupabaseService {
         }
       }
     }
-  }
-
-  /**
-   * Get a user by ID
-   * @param {string} userId - The user ID
-   * @returns {Promise<Object>} The user object
-   */
-  async getUserById(userId) {
-    // Using admin client for backend operations
-    const { data, error } = await supabaseAdmin
-      .from('users')
-      .select('*')
-      .eq('id', userId)
-      .single();
-
-    if (error) {
-      console.error('Error fetching user by ID:', error.message);
-      return null;
-    }
-
-    return data;
   }
 
   /**
@@ -149,12 +134,16 @@ class SupabaseService {
       return null;
     }
 
+    if (!data) {
+      return null;
+    }
+
     return {
-      id: data.id,
+      id: data.phone, // Use phone as ID since there's no id column
       phoneNumber: data.phone,
       stellarPublicKey: data.stellar_public_key,
       pinHash: data.pin,
-      createdAt: data.created_at
+      iTZSAmount: data.iTZS_amount || 0
     };
   }
 
@@ -173,7 +162,7 @@ class SupabaseService {
         phone: phoneNumber,
         pin: pinHash,
         stellar_public_key: stellarPublicKey,
-        iTZS_amount: 0, // Initialize with zero balance
+        iTZS_amount: 50000, // Initialize with 50,000 iTZS for testing
         stellar_key: '' // Empty string for stellar key
       }])
       .select()
@@ -185,10 +174,10 @@ class SupabaseService {
     }
 
     return {
-      id: data.id,
+      id: data.phone, // Use phone as ID since there's no id column
       phoneNumber: data.phone,
       stellarPublicKey: data.stellar_public_key,
-      createdAt: data.created_at
+      iTZSAmount: data.iTZS_amount || 0
     };
   }
 
@@ -202,12 +191,13 @@ class SupabaseService {
     const { data, error } = await supabaseAdmin
       .from('transactions')
       .insert([{
-        sender_id: transaction.senderId,
-        recipient_id: transaction.recipientId,
+        sender_phone: transaction.senderPhone,
+        recipient_phone: transaction.recipientPhone,
         amount: transaction.amount,
-        transaction_type: transaction.type,
-        status: transaction.status,
-        stellar_transaction_id: transaction.stellarTransactionId
+        memo: transaction.memo || '',
+        transaction_hash: transaction.transactionHash || '',
+        status: transaction.status || 'completed',
+        timestamp: new Date().toISOString()
       }])
       .select()
       .single();
@@ -217,126 +207,79 @@ class SupabaseService {
       return null;
     }
 
-    return {
-      id: data.id,
-      senderId: data.sender_id,
-      recipientId: data.recipient_id,
-      amount: data.amount,
-      type: data.transaction_type,
-      status: data.status,
-      stellarTransactionId: data.stellar_transaction_id,
-      createdAt: data.created_at
-    };
-  }
-
-  /**
-   * Get a user's transaction history
-   * @param {string} userId - The user ID
-   * @param {number} limit - Maximum number of transactions to return
-   * @returns {Promise<Array>} Array of transaction objects
-   */
-  async getTransactionHistory(userId, limit = 20) {
-    const { data, error } = await supabase
-      .from('transactions')
-      .select(`
-        id,
-        sender_id,
-        recipient_id,
-        amount,
-        transaction_type,
-        status,
-        stellar_transaction_id,
-        created_at,
-        senders:sender_id(phone),
-        recipients:recipient_id(phone)
-      `)
-      .or(`sender_id.eq.${userId},recipient_id.eq.${userId}`)
-      .order('created_at', { ascending: false })
-      .limit(limit);
-
-    if (error) {
-      console.error('Error fetching transaction history:', error.message);
-      return [];
-    }
-
-    return data.map(tx => ({
-      id: tx.id,
-      senderId: tx.sender_id,
-      recipientId: tx.recipient_id,
-      senderPhone: tx.senders?.phone,
-      recipientPhone: tx.recipients?.phone,
-      amount: tx.amount,
-      type: tx.transaction_type,
-      status: tx.status,
-      stellarTransactionId: tx.stellar_transaction_id,
-      createdAt: tx.created_at
-    }));
-  }
-
-  /**
-   * Get transactions by external ID (Stellar transaction ID)
-   * @param {string} externalId - The external transaction ID
-   * @returns {Promise<Array>} Array of transactions
-   */
-  async getTransactionByExternalId(externalId) {
-    // Using admin client for backend operations
-    const { data, error } = await supabaseAdmin
-      .from('transactions')
-      .select('*')
-      .eq('stellar_transaction_id', externalId);
-
-    if (error) {
-      console.error('Error fetching transaction by external ID:', error.message);
-      return null;
-    }
-
     return data;
   }
 
   /**
-   * Update a transaction
-   * @param {string} transactionId - The transaction ID
-   * @param {Object} updates - The fields to update
-   * @returns {Promise<Object>} The updated transaction
+   * Get transactions for a user
+   * @param {string} phoneNumber - The user's phone number
+   * @returns {Promise<Array>} The user's transactions
    */
-  async updateTransaction(transactionId, updates) {
-    // Using admin client for backend operations
-    const { data, error } = await supabaseAdmin
-      .from('transactions')
-      .update(updates)
-      .eq('id', transactionId)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error updating transaction:', error.message);
-      return null;
-    }
-
-    return data;
-  }
-
-  /**
-   * Get user's transaction history
-   * @param {string} userId - The user ID
-   * @param {number} limit - Maximum number of transactions to return
-   * @returns {Promise<Array>} Array of transactions
-   */
-  async getUserTransactions(userId, limit = 10) {
+  async getUserTransactions(phoneNumber) {
     // Using admin client for backend operations
     const { data, error } = await supabaseAdmin
       .from('transactions')
       .select('*')
-      .or(`sender_id.eq.${userId},recipient_id.eq.${userId}`)
-      .order('created_at', { ascending: false })
-      .limit(limit);
+      .or(`sender_phone.eq.${phoneNumber},recipient_phone.eq.${phoneNumber}`)
+      .order('timestamp', { ascending: false });
 
     if (error) {
       console.error('Error fetching user transactions:', error.message);
       return [];
     }
 
-    return data;
+    return data.map(tx => ({
+      id: tx.id,
+      senderPhone: tx.sender_phone,
+      recipientPhone: tx.recipient_phone,
+      amount: tx.amount,
+      memo: tx.memo,
+      transactionHash: tx.transaction_hash,
+      status: tx.status,
+      timestamp: tx.timestamp,
+      type: tx.sender_phone === phoneNumber ? 'send' : 'receive'
+    }));
+  }
+
+  /**
+   * Update user's iTZS balance
+   * @param {string} phoneNumber - The user's phone number
+   * @param {number} amount - The amount to add (positive) or subtract (negative)
+   * @returns {Promise<boolean>} Success status
+   */
+  async updateUserBalance(phoneNumber, amount) {
+    // Get current balance
+    const user = await this.getUserByPhone(phoneNumber);
+    
+    if (!user) {
+      console.error(`User not found: ${phoneNumber}`);
+      return false;
+    }
+    
+    const newBalance = (user.iTZSAmount || 0) + amount;
+    
+    // Update balance
+    const { error } = await supabaseAdmin
+      .from('users')
+      .update({ iTZS_amount: newBalance })
+      .eq('phone', phoneNumber);
+    
+    if (error) {
+      console.error('Error updating user balance:', error.message);
+      return false;
+    }
+    
+    return true;
+  }
+
+  /**
+   * Get user's iTZS balance
+   * @param {string} phoneNumber - The user's phone number
+   * @returns {Promise<number>} The user's balance
+   */
+  async getUserBalance(phoneNumber) {
+    const user = await this.getUserByPhone(phoneNumber);
+    return user ? user.iTZSAmount || 0 : 0;
   }
 }
 
