@@ -432,12 +432,12 @@ const HomeScreen = () => {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 className="flex flex-col items-center"
-                onClick={() => navigate('/scan')}
+                onClick={() => navigate('/services')}
               >
                 <div className="w-14 h-14 rounded-full bg-yellow-500/10 flex items-center justify-center text-yellow-500 mb-2 shadow-inner shadow-yellow-500/5">
-                  <FiCreditCard className="h-6 w-6" />
+                  <FiGlobe className="h-6 w-6" />
                 </div>
-                <span className="text-sm text-gray-300 font-medium">Scan</span>
+                <span className="text-sm text-gray-300 font-medium">Services</span>
               </motion.div>
               
               <motion.div
@@ -449,7 +449,7 @@ const HomeScreen = () => {
                 <div className="w-14 h-14 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-500 mb-2 shadow-inner shadow-purple-500/5">
                   <FiPlus className="h-6 w-6" />
                 </div>
-                <span className="text-sm text-gray-300 font-medium">Add</span>
+                <span className="text-sm text-gray-300 font-medium">Add Funds</span>
               </motion.div>
             </div>
           </div>

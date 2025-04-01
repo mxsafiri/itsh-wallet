@@ -19,6 +19,7 @@ import TransactionHistoryScreen from './screens/TransactionHistoryScreen';
 import SecurityScreen from './screens/SecurityScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import LearnScreen from './screens/LearnScreen';
+import ServicePaymentScreen from './screens/ServicePaymentScreen';
 
 // Loading component
 const LoadingScreen = () => (
@@ -187,6 +188,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <ScanScreen />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/services" 
+                  element={
+                    <ProtectedRoute>
+                      <ServicePaymentScreen />
                     </ProtectedRoute>
                   } 
                 />
