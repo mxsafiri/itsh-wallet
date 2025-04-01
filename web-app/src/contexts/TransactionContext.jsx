@@ -26,9 +26,11 @@ export const TransactionProvider = ({ children }) => {
   // Load transactions when user changes or refresh is triggered
   useEffect(() => {
     if (user?.phoneNumber) {
+      console.log('[TRANSACTION] Loading data for user:', user.phoneNumber);
       loadTransactions();
       loadRecentRecipients();
     } else {
+      console.log('[TRANSACTION] No user, clearing transaction data');
       setTransactions([]);
       setRecentRecipients([]);
     }
@@ -40,10 +42,12 @@ export const TransactionProvider = ({ children }) => {
     
     setIsLoading(true);
     try {
+      console.log('[TRANSACTION] Getting transactions for:', user.phoneNumber);
       const txs = mockTransactionService.getRecentTransactions(user.phoneNumber);
+      console.log('[TRANSACTION] Loaded transactions:', txs);
       setTransactions(txs);
     } catch (error) {
-      console.error('Error loading transactions:', error);
+      console.error('[TRANSACTION] Error loading transactions:', error);
       toast.error('Failed to load transactions');
     } finally {
       setIsLoading(false);

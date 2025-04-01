@@ -37,7 +37,9 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('nedapay_token', 'mock-jwt-token-for-development');
       
       // Set auth header for API calls
-      api.defaults.headers.common['Authorization'] = 'Bearer mock-jwt-token-for-development';
+      if (api && api.defaults) {
+        api.defaults.headers.common['Authorization'] = 'Bearer mock-jwt-token-for-development';
+      }
       
       // Set user state
       setUser(mockUser);
@@ -77,7 +79,9 @@ export const AuthProvider = ({ children }) => {
           console.log('[AUTH] Found stored user:', userData);
           
           // Set auth header for API calls
-          api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+          if (api && api.defaults) {
+            api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+          }
           
           // Verify token is still valid by fetching user data
           try {
@@ -103,14 +107,18 @@ export const AuthProvider = ({ children }) => {
               // Token expired or invalid, clear storage
               localStorage.removeItem('nedapay_user');
               localStorage.removeItem('nedapay_token');
-              delete api.defaults.headers.common['Authorization'];
+              if (api && api.defaults) {
+                delete api.defaults.headers.common['Authorization'];
+              }
             }
           } catch (error) {
             console.error('[AUTH] Error verifying auth token:', error);
             // If there's an error, we'll clear the stored data to be safe
             localStorage.removeItem('nedapay_user');
             localStorage.removeItem('nedapay_token');
-            delete api.defaults.headers.common['Authorization'];
+            if (api && api.defaults) {
+              delete api.defaults.headers.common['Authorization'];
+            }
           }
         } else {
           console.log('[AUTH] No stored user or token found');
@@ -146,7 +154,9 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('nedapay_token', 'mock-jwt-token-for-development');
       
       // Set auth header for API calls
-      api.defaults.headers.common['Authorization'] = 'Bearer mock-jwt-token-for-development';
+      if (api && api.defaults) {
+        api.defaults.headers.common['Authorization'] = 'Bearer mock-jwt-token-for-development';
+      }
       
       // Set user state
       setUser(mockUser);
@@ -180,7 +190,9 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('nedapay_token', response.data.token);
         
         // Set auth header for future requests
-        api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+        if (api && api.defaults) {
+          api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+        }
         
         setUser(userData);
         setError(null);
@@ -226,7 +238,9 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('nedapay_token', 'mock-jwt-token-for-development');
       
       // Set auth header for API calls
-      api.defaults.headers.common['Authorization'] = 'Bearer mock-jwt-token-for-development';
+      if (api && api.defaults) {
+        api.defaults.headers.common['Authorization'] = 'Bearer mock-jwt-token-for-development';
+      }
       
       // Set user state
       setUser(mockUser);
@@ -260,7 +274,9 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('nedapay_token', response.data.token);
         
         // Set auth header for future requests
-        api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+        if (api && api.defaults) {
+          api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+        }
         
         setUser(userData);
         setError(null);
@@ -293,7 +309,9 @@ export const AuthProvider = ({ children }) => {
     console.log('[AUTH] Logging out, clearing user data and token');
     localStorage.removeItem('nedapay_user');
     localStorage.removeItem('nedapay_token');
-    delete api.defaults.headers.common['Authorization'];
+    if (api && api.defaults) {
+      delete api.defaults.headers.common['Authorization'];
+    }
     setUser(null);
     setError(null);
     logAuthState('Logout completed');

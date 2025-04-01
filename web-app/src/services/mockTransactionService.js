@@ -44,6 +44,13 @@ const mockUsers = {
     iTZSAmount: 32000,
     name: 'Sarah Williams',
     recentTransactions: []
+  },
+  '+255123456789': {  
+    phoneNumber: '+255123456789',
+    stellarPublicKey: 'MOCK_PUBLIC_KEY_255123456789',
+    iTZSAmount: 50000,
+    name: 'Demo User',
+    recentTransactions: []
   }
 };
 
