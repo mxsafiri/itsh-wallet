@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTransaction } from '../contexts/TransactionContext';
 import { toast } from 'react-toastify';
 import { formatDistanceToNow } from 'date-fns';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { 
   FiSend, FiDownload, FiRefreshCw, FiClock, FiArrowUpRight, 
   FiArrowDownLeft, FiChevronRight, FiHome, FiList, FiLock, FiSettings,
-  FiPlus, FiDollarSign, FiCreditCard, FiTrendingUp
+  FiPlus, FiDollarSign, FiCreditCard, FiTrendingUp, FiActivity,
+  FiInfo, FiShield, FiGlobe, FiUsers, FiArrowRight
 } from 'react-icons/fi';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
@@ -26,6 +27,12 @@ const HomeScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [showBalanceChart, setShowBalanceChart] = useState(false);
   const [balanceHistory, setBalanceHistory] = useState([]);
+  const [activeNav, setActiveNav] = useState('home');
+  const [navOpen, setNavOpen] = useState(false);
+  const [activeCard, setActiveCard] = useState(0);
+  const dragControls = useDragControls();
+  const navRef = useRef(null);
+  const cardsRef = useRef(null);
 
   useEffect(() => {
     // Generate mock balance history data
@@ -109,309 +116,442 @@ const HomeScreen = () => {
     }
   };
 
+  // Handle swipe gestures for navigation
+  const handleDragEnd = (event, info) => {
+    if (info.offset.y > 50) {
+      setNavOpen(true);
+    } else if (info.offset.y < -50) {
+      setNavOpen(false);
+    }
+  };
+
+  const handleNavClick = (nav) => {
+    setActiveNav(nav);
+    setNavOpen(false);
+    
+    // Navigate to the appropriate route
+    if (nav !== 'home') {
+      navigate(`/${nav}`);
+    }
+    
+    // Add haptic feedback if supported
+    if (window.navigator && window.navigator.vibrate) {
+      window.navigator.vibrate(50);
+    }
+  };
+
+  // Educational cards data
+  const educationalCards = [
+    {
+      id: 1,
+      title: "More for your finances",
+      subtitle: "Zaidi kwa fedha zako",
+      description: "Send money instantly to anyone in Tanzania",
+      descriptionSwahili: "Tuma pesa mara moja kwa mtu yeyote Tanzania",
+      icon: <FiSend className="h-8 w-8" />,
+      color: "from-blue-500 to-blue-600",
+      textColor: "text-blue-100"
+    },
+    {
+      id: 2,
+      title: "No hidden fees",
+      subtitle: "Fanya Malipo Bila makato",
+      description: "Transparent transactions with zero hidden costs",
+      descriptionSwahili: "Miamala inayoonekana bila gharama zozote zilizofichwa",
+      icon: <FiShield className="h-8 w-8" />,
+      color: "from-green-500 to-green-600",
+      textColor: "text-green-100"
+    },
+    {
+      id: 3,
+      title: "Secure & Fast",
+      subtitle: "Salama & Haraka",
+      description: "Blockchain-powered security for your money",
+      descriptionSwahili: "Usalama wa blockchain kwa fedha zako",
+      icon: <FiLock className="h-8 w-8" />,
+      color: "from-purple-500 to-purple-600",
+      textColor: "text-purple-100"
+    },
+    {
+      id: 4,
+      title: "For Everyone",
+      subtitle: "Kwa Kila Mtu",
+      description: "Accessible financial services for all Tanzanians",
+      descriptionSwahili: "Huduma za kifedha zinazopatikana kwa Watanzania wote",
+      icon: <FiUsers className="h-8 w-8" />,
+      color: "from-yellow-500 to-yellow-600",
+      textColor: "text-yellow-100"
+    }
+  ];
+
+  // Handle card scroll
+  const handleCardScroll = (index) => {
+    setActiveCard(index);
+    if (cardsRef.current) {
+      const cardWidth = cardsRef.current.offsetWidth;
+      cardsRef.current.scrollTo({
+        left: index * (cardWidth + 16), // card width + gap
+        behavior: 'smooth'
+      });
+    }
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="min-h-screen flex flex-col bg-background pb-16"
+      className="min-h-screen flex flex-col bg-[#121212] pb-8"
     >
-      {/* Header with Balance */}
+      {/* Gesture-based Top Navigation */}
       <motion.div 
-        className="relative overflow-hidden bg-gradient-to-br from-background to-secondary-light p-6 rounded-b-3xl"
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.1, duration: 0.5 }}
+        className="fixed top-0 left-0 right-0 z-30 bg-[#151823] shadow-lg"
+        initial={{ y: navOpen ? 0 : -150 }}
+        animate={{ y: navOpen ? 0 : -150 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
-        <div className="absolute inset-0 bg-grid opacity-10"></div>
-        
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="bg-primary/20 p-2 rounded-xl mr-3"
-            >
-              <FiCreditCard className="text-primary h-6 w-6" />
-            </motion.div>
-            <div>
-              <h1 className="text-xl font-bold text-text">NEDApay</h1>
-              <div className="badge badge-primary mt-1">Demo Wallet</div>
-            </div>
-          </div>
-          
-          <motion.button 
-            onClick={logout} 
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="btn btn-secondary btn-icon"
-          >
-            <FiSettings className="h-5 w-5" />
-          </motion.button>
-        </div>
-        
-        <div className="text-center mb-2">
-          <p className="text-text-secondary text-sm mb-1">Current Balance</p>
-          <motion.h2 
-            className="text-4xl md:text-5xl font-bold text-gradient"
-            initial={{ scale: 0.9 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.3, duration: 0.5 }}
-          >
-            {user?.iTZSAmount?.toLocaleString() || '0'}
-            <span className="text-lg ml-1 text-text-secondary">iTZS</span>
-          </motion.h2>
-          
-          <motion.button
-            onClick={() => setShowBalanceChart(!showBalanceChart)}
-            className="text-primary text-xs mt-2 flex items-center mx-auto"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <FiTrendingUp className="mr-1" /> 
-            {showBalanceChart ? 'Hide Chart' : 'Show Balance History'}
-          </motion.button>
-        </div>
-        
-        <AnimatePresence>
-          {showBalanceChart && (
+        <div className="p-5">
+          <div className="grid grid-cols-4 gap-4">
             <motion.div 
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 150, opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="mt-4 overflow-hidden"
-            >
-              <ResponsiveContainer width="100%" height={150}>
-                <AreaChart
-                  data={balanceHistory}
-                  margin={{ top: 5, right: 0, left: 0, bottom: 5 }}
-                >
-                  <defs>
-                    <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#0084FF" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#0084FF" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <XAxis 
-                    dataKey="date" 
-                    tick={{ fill: '#94A3B8', fontSize: 10 }}
-                    axisLine={{ stroke: '#334155' }}
-                    tickLine={false}
-                  />
-                  <YAxis 
-                    hide={true}
-                    domain={['dataMin - 5000', 'dataMax + 5000']}
-                  />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: '#1E293B', 
-                      border: 'none',
-                      borderRadius: '0.5rem',
-                      color: '#F1F5F9'
-                    }}
-                    formatter={(value) => [`${value.toLocaleString()} iTZS`, 'Balance']}
-                    labelStyle={{ color: '#94A3B8' }}
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="balance" 
-                    stroke="#0084FF" 
-                    strokeWidth={2}
-                    fillOpacity={1} 
-                    fill="url(#colorBalance)" 
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
-
-      {/* Quick Actions */}
-      <motion.div 
-        className="px-4 -mt-6 z-10"
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.2, duration: 0.5 }}
-      >
-        <div className="card glass p-4 shadow-glow">
-          <div className="grid grid-cols-4 gap-2">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
+              className={`flex flex-col items-center p-3 rounded-xl ${activeNav === 'home' ? 'bg-blue-500/20' : 'bg-[#1E1E2D]'}`}
               whileTap={{ scale: 0.95 }}
-              className="flex flex-col items-center"
-              onClick={() => navigate('/send')}
+              onClick={() => handleNavClick('home')}
             >
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2">
-                <FiSend className="h-5 w-5" />
-              </div>
-              <span className="text-xs text-text-secondary">Send</span>
+              <FiHome className={`h-6 w-6 ${activeNav === 'home' ? 'text-blue-400' : 'text-gray-400'}`} />
+              <span className={`text-xs mt-1 font-medium ${activeNav === 'home' ? 'text-blue-400' : 'text-gray-400'}`}>Home</span>
             </motion.div>
             
-            <motion.div
-              whileHover={{ scale: 1.05 }}
+            <motion.div 
+              className={`flex flex-col items-center p-3 rounded-xl ${activeNav === 'transactions' ? 'bg-blue-500/20' : 'bg-[#1E1E2D]'}`}
               whileTap={{ scale: 0.95 }}
-              className="flex flex-col items-center"
-              onClick={() => navigate('/receive')}
+              onClick={() => handleNavClick('transactions')}
             >
-              <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center text-success mb-2">
-                <FiDownload className="h-5 w-5" />
-              </div>
-              <span className="text-xs text-text-secondary">Receive</span>
+              <FiList className={`h-6 w-6 ${activeNav === 'transactions' ? 'text-blue-400' : 'text-gray-400'}`} />
+              <span className={`text-xs mt-1 font-medium ${activeNav === 'transactions' ? 'text-blue-400' : 'text-gray-400'}`}>History</span>
             </motion.div>
             
-            <motion.div
-              whileHover={{ scale: 1.05 }}
+            <motion.div 
+              className={`flex flex-col items-center p-3 rounded-xl ${activeNav === 'security' ? 'bg-blue-500/20' : 'bg-[#1E1E2D]'}`}
               whileTap={{ scale: 0.95 }}
-              className="flex flex-col items-center"
-              onClick={() => navigate('/scan')}
+              onClick={() => handleNavClick('security')}
             >
-              <div className="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center text-warning mb-2">
-                <FiCreditCard className="h-5 w-5" />
-              </div>
-              <span className="text-xs text-text-secondary">Scan</span>
+              <FiLock className={`h-6 w-6 ${activeNav === 'security' ? 'text-blue-400' : 'text-gray-400'}`} />
+              <span className={`text-xs mt-1 font-medium ${activeNav === 'security' ? 'text-blue-400' : 'text-gray-400'}`}>Security</span>
             </motion.div>
             
-            <motion.div
-              whileHover={{ scale: 1.05 }}
+            <motion.div 
+              className={`flex flex-col items-center p-3 rounded-xl ${activeNav === 'settings' ? 'bg-blue-500/20' : 'bg-[#1E1E2D]'}`}
               whileTap={{ scale: 0.95 }}
-              className="flex flex-col items-center"
-              onClick={() => toast.info('Add funds feature coming soon!', { theme: 'dark' })}
+              onClick={() => handleNavClick('settings')}
             >
-              <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center text-accent mb-2">
-                <FiPlus className="h-5 w-5" />
-              </div>
-              <span className="text-xs text-text-secondary">Add</span>
+              <FiSettings className={`h-6 w-6 ${activeNav === 'settings' ? 'text-blue-400' : 'text-gray-400'}`} />
+              <span className={`text-xs mt-1 font-medium ${activeNav === 'settings' ? 'text-blue-400' : 'text-gray-400'}`}>Settings</span>
             </motion.div>
           </div>
         </div>
       </motion.div>
-
-      {/* Transaction History */}
+      
+      {/* Navigation Pull Handle */}
       <motion.div 
-        className="flex-1 px-4 mt-6"
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.3, duration: 0.5 }}
+        className="fixed top-0 left-0 right-0 z-20 flex justify-center"
+        drag="y"
+        dragControls={dragControls}
+        dragConstraints={{ top: 0, bottom: 150 }}
+        onDragEnd={handleDragEnd}
+        ref={navRef}
       >
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-bold text-text">Recent Transactions</h3>
-          <motion.button 
-            onClick={handleRefresh}
-            disabled={refreshing}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="btn btn-icon btn-secondary"
-          >
-            <FiRefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-          </motion.button>
-        </div>
-        
-        <div className="card">
-          {isLoading ? (
-            <div className="flex justify-center items-center py-10">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
-            </div>
-          ) : transactions.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-10 text-center">
-              <div className="w-16 h-16 rounded-full bg-background-card flex items-center justify-center mb-4 animate-pulse-slow">
-                <FiClock className="h-8 w-8 text-text-secondary" />
-              </div>
-              <p className="text-text-secondary mb-3">No transactions yet</p>
-              <motion.button 
-                onClick={() => navigate('/send')} 
+        <motion.div 
+          className="w-12 h-1.5 bg-gray-600 rounded-full mt-1.5"
+          whileHover={{ scale: 1.2 }}
+          whileTap={{ scale: 0.8 }}
+        />
+      </motion.div>
+      
+      {/* Main Content with top padding for the navigation handle */}
+      <div className="pt-4">
+        {/* Header with Balance */}
+        <motion.div 
+          className="relative overflow-hidden bg-gradient-to-br from-[#151823] to-[#1E2235] p-6 rounded-b-[2rem]"
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.1, duration: 0.5 }}
+        >
+          {/* Animated background elements */}
+          <div className="absolute inset-0 overflow-hidden">
+            <motion.div 
+              className="absolute top-0 left-0 w-64 h-64 bg-blue-500/10 rounded-full filter blur-3xl"
+              animate={{ 
+                x: ["-50%", "-30%", "-50%"],
+                y: ["-50%", "-30%", "-50%"],
+              }}
+              transition={{ 
+                duration: 15,
+                repeat: Infinity,
+                repeatType: "reverse"
+              }}
+            />
+            <motion.div 
+              className="absolute bottom-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full filter blur-3xl"
+              animate={{ 
+                x: ["30%", "20%", "30%"],
+                y: ["30%", "20%", "30%"],
+              }}
+              transition={{ 
+                duration: 20,
+                repeat: Infinity,
+                repeatType: "reverse"
+              }}
+            />
+          </div>
+          
+          <div className="flex justify-between items-center mb-8">
+            <div className="flex items-center">
+              <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="btn btn-primary"
+                className="bg-blue-500/20 p-2 rounded-xl mr-3"
               >
-                <FiSend className="mr-2" /> Make your first transaction
-              </motion.button>
+                <FiCreditCard className="text-blue-400 h-6 w-6" />
+              </motion.div>
+              <div>
+                <h1 className="text-xl font-bold text-white">NEDApay</h1>
+                <div className="px-2 py-1 bg-blue-500/20 rounded-full text-blue-400 text-xs font-medium mt-1">Demo Wallet</div>
+              </div>
             </div>
-          ) : (
-            <div>
-              {transactions.slice(0, 5).map((tx, index) => (
-                <motion.div 
-                  key={tx.id} 
-                  className="transaction-item"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
+            
+            <motion.button 
+              onClick={logout} 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="p-2 bg-[#2A2A3C] rounded-full"
+            >
+              <FiSettings className="h-5 w-5 text-gray-300" />
+            </motion.button>
+          </div>
+          
+          <div className="text-center mb-4">
+            <p className="text-gray-400 text-sm mb-2">Current Balance</p>
+            <motion.h2 
+              className="text-5xl md:text-6xl font-bold text-white"
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+            >
+              {user?.iTZSAmount?.toLocaleString() || '50,000'}
+              <span className="text-lg ml-2 text-blue-400 font-medium">iTZS</span>
+            </motion.h2>
+            
+            <motion.button
+              onClick={() => setShowBalanceChart(!showBalanceChart)}
+              className="text-blue-400 text-sm mt-3 flex items-center mx-auto font-medium"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <FiActivity className="mr-2" /> 
+              {showBalanceChart ? 'Hide Chart' : 'Show Balance History'}
+            </motion.button>
+          </div>
+          
+          <AnimatePresence>
+            {showBalanceChart && (
+              <motion.div 
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 180, opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="mt-4 overflow-hidden"
+              >
+                <ResponsiveContainer width="100%" height={180}>
+                  <AreaChart
+                    data={balanceHistory}
+                    margin={{ top: 5, right: 0, left: 0, bottom: 5 }}
+                  >
+                    <defs>
+                      <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <XAxis 
+                      dataKey="date" 
+                      tick={{ fill: '#94A3B8', fontSize: 10 }}
+                      axisLine={{ stroke: '#334155' }}
+                      tickLine={false}
+                    />
+                    <YAxis 
+                      hide={true}
+                      domain={['dataMin - 5000', 'dataMax + 5000']}
+                    />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: '#1E293B', 
+                        border: 'none',
+                        borderRadius: '0.75rem',
+                        color: '#F1F5F9',
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
+                      }}
+                      formatter={(value) => [`${value.toLocaleString()} iTZS`, 'Balance']}
+                      labelStyle={{ color: '#94A3B8' }}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="balance" 
+                      stroke="#3B82F6" 
+                      strokeWidth={2}
+                      fillOpacity={1} 
+                      fill="url(#colorBalance)" 
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+
+        {/* Quick Actions */}
+        <motion.div 
+          className="px-4 -mt-8 z-10"
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+        >
+          <div className="bg-[#1E1E2D] p-5 rounded-2xl shadow-lg border border-gray-800/30">
+            <div className="grid grid-cols-4 gap-4">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex flex-col items-center"
+                onClick={() => navigate('/send')}
+              >
+                <div className="w-14 h-14 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 mb-2 shadow-inner shadow-blue-500/5">
+                  <FiSend className="h-6 w-6" />
+                </div>
+                <span className="text-sm text-gray-300 font-medium">Send</span>
+              </motion.div>
+              
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex flex-col items-center"
+                onClick={() => navigate('/receive')}
+              >
+                <div className="w-14 h-14 rounded-full bg-green-500/10 flex items-center justify-center text-green-500 mb-2 shadow-inner shadow-green-500/5">
+                  <FiDownload className="h-6 w-6" />
+                </div>
+                <span className="text-sm text-gray-300 font-medium">Receive</span>
+              </motion.div>
+              
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex flex-col items-center"
+                onClick={() => navigate('/scan')}
+              >
+                <div className="w-14 h-14 rounded-full bg-yellow-500/10 flex items-center justify-center text-yellow-500 mb-2 shadow-inner shadow-yellow-500/5">
+                  <FiCreditCard className="h-6 w-6" />
+                </div>
+                <span className="text-sm text-gray-300 font-medium">Scan</span>
+              </motion.div>
+              
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex flex-col items-center"
+                onClick={() => toast.info('Add funds feature coming soon!', { theme: 'dark' })}
+              >
+                <div className="w-14 h-14 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-500 mb-2 shadow-inner shadow-purple-500/5">
+                  <FiPlus className="h-6 w-6" />
+                </div>
+                <span className="text-sm text-gray-300 font-medium">Add</span>
+              </motion.div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Educational Cards Section - "More for your finances" */}
+        <motion.div 
+          className="flex-1 px-4 mt-8"
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+        >
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-bold text-white">More for your finances</h3>
+            <Link to="/learn" className="text-blue-400 text-sm font-medium flex items-center">
+              Learn more <FiArrowRight className="ml-1" />
+            </Link>
+          </div>
+          
+          <div className="relative">
+            {/* Scrollable Cards */}
+            <div 
+              className="flex overflow-x-auto pb-4 hide-scrollbar snap-x snap-mandatory"
+              ref={cardsRef}
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              {educationalCards.map((card, index) => (
+                <motion.div
+                  key={card.id}
+                  className={`min-w-[280px] h-[200px] mr-4 rounded-2xl p-5 flex flex-col justify-between snap-center bg-gradient-to-br ${card.color} shadow-lg`}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.1 * index, duration: 0.4 }}
+                  whileHover={{ y: -5 }}
                 >
-                  <div className="flex items-center">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${tx.incoming ? 'bg-success/10 text-success' : 'bg-error/10 text-error'}`}>
-                      {getTransactionIcon(tx)}
+                  <div>
+                    <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center mb-4">
+                      {card.icon}
                     </div>
-                    <div>
-                      <p className="font-medium text-text">{tx.memo || (tx.incoming ? 'Received Payment' : 'Sent Payment')}</p>
-                      <div className="flex items-center text-xs text-text-secondary">
-                        <FiClock className="mr-1 h-3 w-3" /> {formatDate(tx.timestamp)}
-                      </div>
-                    </div>
+                    <h4 className="text-xl font-bold text-white mb-1">{card.title}</h4>
+                    <p className="text-sm font-medium mb-3 opacity-80">{card.subtitle}</p>
                   </div>
-                  <div className="text-right">
-                    <p className={tx.incoming ? 'amount-positive' : 'amount-negative'}>
-                      {formatAmount(tx.amount, tx.incoming)}
-                    </p>
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${
-                      tx.status === 'completed' ? 'bg-success/10 text-success' : 
-                      tx.status === 'pending' ? 'bg-warning/10 text-warning' : 
-                      'bg-error/10 text-error'
-                    }`}>
-                      {tx.status}
-                    </span>
+                  <div>
+                    <p className="text-sm text-white mb-1">{card.description}</p>
+                    <p className={`text-xs ${card.textColor} font-medium`}>{card.descriptionSwahili}</p>
                   </div>
                 </motion.div>
               ))}
-              
-              {transactions.length > 5 && (
-                <motion.div 
-                  className="mt-4 text-center"
-                  whileHover={{ scale: 1.02 }}
-                >
-                  <Link 
-                    to="/transactions" 
-                    className="btn btn-secondary w-full"
-                  >
-                    View all transactions
-                    <FiChevronRight className="ml-1" />
-                  </Link>
-                </motion.div>
-              )}
             </div>
-          )}
-        </div>
-      </motion.div>
+            
+            {/* Card Indicators */}
+            <div className="flex justify-center mt-4">
+              {educationalCards.map((_, index) => (
+                <motion.button
+                  key={index}
+                  className={`w-2.5 h-2.5 rounded-full mx-1 ${activeCard === index ? 'bg-blue-500' : 'bg-gray-600'}`}
+                  onClick={() => handleCardScroll(index)}
+                  whileHover={{ scale: 1.2 }}
+                  whileTap={{ scale: 0.8 }}
+                />
+              ))}
+            </div>
+          </div>
+        </motion.div>
 
-      {/* Bottom Navigation */}
-      <motion.nav 
-        className="fixed bottom-0 left-0 right-0 bg-background-card border-t border-dark-700/30 px-4 py-2 z-20"
-        initial={{ y: 50 }}
-        animate={{ y: 0 }}
-        transition={{ delay: 0.4, duration: 0.5 }}
-      >
-        <div className="flex justify-around">
-          <Link to="/home" className="nav-item active">
-            <FiHome className="h-5 w-5" />
-            <span className="text-xs mt-1">Home</span>
+        {/* Transactions Button */}
+        <motion.div 
+          className="px-4 mt-6 mb-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4, duration: 0.5 }}
+        >
+          <Link 
+            to="/transactions" 
+            className="flex items-center justify-between w-full p-4 bg-[#1E1E2D] hover:bg-[#252538] text-white rounded-xl transition-all duration-200 border border-gray-800/30"
+          >
+            <div className="flex items-center">
+              <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center mr-3">
+                <FiList className="h-5 w-5 text-blue-400" />
+              </div>
+              <div>
+                <h4 className="font-medium">View Transactions</h4>
+                <p className="text-xs text-gray-400">See your payment history</p>
+              </div>
+            </div>
+            <FiChevronRight className="h-5 w-5 text-gray-400" />
           </Link>
-          
-          <Link to="/transactions" className="nav-item">
-            <FiList className="h-5 w-5" />
-            <span className="text-xs mt-1">History</span>
-          </Link>
-          
-          <Link to="/security" className="nav-item">
-            <FiLock className="h-5 w-5" />
-            <span className="text-xs mt-1">Security</span>
-          </Link>
-          
-          <Link to="/settings" className="nav-item">
-            <FiSettings className="h-5 w-5" />
-            <span className="text-xs mt-1">Settings</span>
-          </Link>
-        </div>
-      </motion.nav>
+        </motion.div>
+      </div>
     </motion.div>
   );
 };
