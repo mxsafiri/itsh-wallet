@@ -2,7 +2,7 @@ import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { TransactionProvider } from './contexts/TransactionContext';
-import { ToastContainer } from 'react-toastify';
+import { ToastContainer, Slide } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { AnimatePresence, motion } from 'framer-motion';
 import { FiHome, FiAlertCircle } from 'react-icons/fi';
@@ -18,6 +18,7 @@ import ScanScreen from './screens/ScanScreen';
 import TransactionHistoryScreen from './screens/TransactionHistoryScreen';
 import SecurityScreen from './screens/SecurityScreen';
 import SettingsScreen from './screens/SettingsScreen';
+import LearnScreen from './screens/LearnScreen';
 
 // Loading component
 const LoadingScreen = () => (
@@ -214,6 +215,24 @@ function App() {
                   } 
                 />
                 
+                {/* Learn routes */}
+                <Route 
+                  path="/learn" 
+                  element={
+                    <ProtectedRoute>
+                      <LearnScreen />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/learn/:topic" 
+                  element={
+                    <ProtectedRoute>
+                      <LearnScreen />
+                    </ProtectedRoute>
+                  } 
+                />
+                
                 {/* Fallback route */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
@@ -221,16 +240,18 @@ function App() {
           </Suspense>
         </Router>
         <ToastContainer
-          position="top-center"
-          autoClose={3000}
-          hideProgressBar={false}
+          position="bottom-right"
+          autoClose={2000}
+          hideProgressBar={true}
           newestOnTop
           closeOnClick
           rtl={false}
-          pauseOnFocusLoss
+          pauseOnFocusLoss={false}
           draggable
-          pauseOnHover
+          pauseOnHover={false}
           theme="dark"
+          limit={3}
+          transition={Slide}
         />
       </TransactionProvider>
     </AuthProvider>

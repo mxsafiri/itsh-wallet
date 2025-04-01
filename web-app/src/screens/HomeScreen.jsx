@@ -150,7 +150,8 @@ const HomeScreen = () => {
       descriptionSwahili: "Tuma pesa mara moja kwa mtu yeyote",
       icon: <FiSend className="h-8 w-8" />,
       color: "from-blue-500/90 to-blue-600/90",
-      textColor: "text-blue-100"
+      textColor: "text-blue-100",
+      learnPath: "send-money"
     },
     {
       id: 2,
@@ -160,7 +161,8 @@ const HomeScreen = () => {
       descriptionSwahili: "Hakuna gharama zozote zilizofichwa",
       icon: <FiShield className="h-8 w-8" />,
       color: "from-green-500/90 to-green-600/90",
-      textColor: "text-green-100"
+      textColor: "text-green-100",
+      learnPath: "no-fees"
     },
     {
       id: 3,
@@ -170,7 +172,8 @@ const HomeScreen = () => {
       descriptionSwahili: "Usalama wa hali ya juu",
       icon: <FiLock className="h-8 w-8" />,
       color: "from-purple-500/90 to-purple-600/90",
-      textColor: "text-purple-100"
+      textColor: "text-purple-100",
+      learnPath: "security"
     },
     {
       id: 4,
@@ -180,7 +183,8 @@ const HomeScreen = () => {
       descriptionSwahili: "Huduma za benki kwa wote",
       icon: <FiUsers className="h-8 w-8" />,
       color: "from-yellow-500/90 to-yellow-600/90",
-      textColor: "text-yellow-100"
+      textColor: "text-yellow-100",
+      learnPath: "inclusion"
     }
   ];
 
@@ -200,7 +204,7 @@ const HomeScreen = () => {
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 0.3 }}
       className="min-h-screen flex flex-col bg-[#121212] pb-8"
     >
       {/* Gesture-based Top Navigation */}
@@ -208,13 +212,13 @@ const HomeScreen = () => {
         className="fixed top-0 left-0 right-0 z-30 bg-[#151823] shadow-lg"
         initial={{ y: navOpen ? 0 : -150 }}
         animate={{ y: navOpen ? 0 : -150 }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        transition={{ type: "spring", stiffness: 200, damping: 25 }}
       >
         <div className="p-5">
           <div className="grid grid-cols-4 gap-4">
             <motion.div 
               className={`flex flex-col items-center p-3 rounded-xl ${activeNav === 'home' ? 'bg-blue-500/20' : 'bg-[#1E1E2D]'}`}
-              whileTap={{ scale: 0.95 }}
+              whileTap={{ scale: 0.9 }}
               onClick={() => handleNavClick('home')}
             >
               <FiHome className={`h-6 w-6 ${activeNav === 'home' ? 'text-blue-400' : 'text-gray-400'}`} />
@@ -223,7 +227,7 @@ const HomeScreen = () => {
             
             <motion.div 
               className={`flex flex-col items-center p-3 rounded-xl ${activeNav === 'transactions' ? 'bg-blue-500/20' : 'bg-[#1E1E2D]'}`}
-              whileTap={{ scale: 0.95 }}
+              whileTap={{ scale: 0.9 }}
               onClick={() => handleNavClick('transactions')}
             >
               <FiList className={`h-6 w-6 ${activeNav === 'transactions' ? 'text-blue-400' : 'text-gray-400'}`} />
@@ -232,7 +236,7 @@ const HomeScreen = () => {
             
             <motion.div 
               className={`flex flex-col items-center p-3 rounded-xl ${activeNav === 'security' ? 'bg-blue-500/20' : 'bg-[#1E1E2D]'}`}
-              whileTap={{ scale: 0.95 }}
+              whileTap={{ scale: 0.9 }}
               onClick={() => handleNavClick('security')}
             >
               <FiLock className={`h-6 w-6 ${activeNav === 'security' ? 'text-blue-400' : 'text-gray-400'}`} />
@@ -241,7 +245,7 @@ const HomeScreen = () => {
             
             <motion.div 
               className={`flex flex-col items-center p-3 rounded-xl ${activeNav === 'settings' ? 'bg-blue-500/20' : 'bg-[#1E1E2D]'}`}
-              whileTap={{ scale: 0.95 }}
+              whileTap={{ scale: 0.9 }}
               onClick={() => handleNavClick('settings')}
             >
               <FiSettings className={`h-6 w-6 ${activeNav === 'settings' ? 'text-blue-400' : 'text-gray-400'}`} />
@@ -262,8 +266,7 @@ const HomeScreen = () => {
       >
         <motion.div 
           className="w-12 h-1.5 bg-gray-600 rounded-full mt-1.5"
-          whileHover={{ scale: 1.2 }}
-          whileTap={{ scale: 0.8 }}
+          whileTap={{ scale: 0.9 }}
         />
       </motion.div>
       
@@ -272,35 +275,17 @@ const HomeScreen = () => {
         {/* Header with Balance */}
         <motion.div 
           className="relative overflow-hidden bg-gradient-to-br from-[#151823] to-[#1E2235] p-6 rounded-b-[2rem]"
-          initial={{ y: -20, opacity: 0 }}
+          initial={{ y: -10, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.1, duration: 0.5 }}
+          transition={{ delay: 0.1, duration: 0.3 }}
         >
-          {/* Animated background elements */}
-          <div className="absolute inset-0 overflow-hidden">
-            <motion.div 
+          {/* Simplified background elements with reduced animation */}
+          <div className="absolute inset-0 overflow-hidden opacity-50">
+            <div 
               className="absolute top-0 left-0 w-64 h-64 bg-blue-500/10 rounded-full filter blur-3xl"
-              animate={{ 
-                x: ["-50%", "-30%", "-50%"],
-                y: ["-50%", "-30%", "-50%"],
-              }}
-              transition={{ 
-                duration: 15,
-                repeat: Infinity,
-                repeatType: "reverse"
-              }}
             />
-            <motion.div 
+            <div
               className="absolute bottom-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full filter blur-3xl"
-              animate={{ 
-                x: ["30%", "20%", "30%"],
-                y: ["30%", "20%", "30%"],
-              }}
-              transition={{ 
-                duration: 20,
-                repeat: Infinity,
-                repeatType: "reverse"
-              }}
             />
           </div>
           
@@ -320,7 +305,7 @@ const HomeScreen = () => {
             </div>
             
             <motion.button 
-              onClick={logout} 
+              onClick={() => navigate('/settings')} 
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="p-2 bg-[#2A2A3C] rounded-full"
@@ -333,9 +318,9 @@ const HomeScreen = () => {
             <p className="text-gray-400 text-sm mb-2">Current Balance</p>
             <motion.h2 
               className="text-5xl md:text-6xl font-bold text-white"
-              initial={{ scale: 0.9 }}
+              initial={{ scale: 0.95 }}
               animate={{ scale: 1 }}
-              transition={{ delay: 0.3, duration: 0.5 }}
+              transition={{ duration: 0.3 }}
             >
               {user?.iTZSAmount?.toLocaleString() || '50,000'}
               <span className="text-lg ml-2 text-blue-400 font-medium">iTZS</span>
@@ -358,7 +343,7 @@ const HomeScreen = () => {
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 180, opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.3 }}
+                transition={{ duration: 0.2 }}
                 className="mt-4 overflow-hidden"
               >
                 <ResponsiveContainer width="100%" height={180}>
@@ -410,16 +395,16 @@ const HomeScreen = () => {
 
         {/* Quick Actions */}
         <motion.div 
-          className="px-4 -mt-8 z-10"
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
+          className="px-4 mt-6 z-10"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.1, duration: 0.3 }}
         >
           <div className="bg-[#1E1E2D] p-5 rounded-2xl shadow-lg border border-gray-800/30">
             <div className="grid grid-cols-4 gap-4">
               <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
                 className="flex flex-col items-center"
                 onClick={() => navigate('/send')}
               >
@@ -430,8 +415,8 @@ const HomeScreen = () => {
               </motion.div>
               
               <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
                 className="flex flex-col items-center"
                 onClick={() => navigate('/receive')}
               >
@@ -442,8 +427,8 @@ const HomeScreen = () => {
               </motion.div>
               
               <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
                 className="flex flex-col items-center"
                 onClick={() => navigate('/scan')}
               >
@@ -454,8 +439,8 @@ const HomeScreen = () => {
               </motion.div>
               
               <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
                 className="flex flex-col items-center"
                 onClick={() => toast.info('Add funds feature coming soon!', { theme: 'dark' })}
               >
@@ -471,9 +456,9 @@ const HomeScreen = () => {
         {/* Educational Cards Section - "More for your finances" */}
         <motion.div 
           className="flex-1 px-4 mt-8"
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.3 }}
         >
           <div className="mb-6">
             <h3 className="text-2xl font-bold text-white mb-1">NEDApay</h3>
@@ -490,10 +475,10 @@ const HomeScreen = () => {
                 <motion.div
                   key={card.id}
                   className={`min-w-[300px] mr-4 rounded-2xl overflow-hidden snap-center shadow-lg relative`}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.1 * index, duration: 0.4 }}
-                  whileHover={{ y: -5 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.05 * index, duration: 0.3 }}
+                  whileHover={{ y: -3 }}
                 >
                   {/* Card background with gradient */}
                   <div className={`absolute inset-0 bg-gradient-to-br ${card.color}`}></div>
@@ -520,7 +505,7 @@ const HomeScreen = () => {
                       
                       {/* Learn more link at bottom */}
                       <div className="mt-4 flex justify-end">
-                        <Link to="/learn" className="text-white/90 text-sm font-medium flex items-center">
+                        <Link to={`/learn/${card.learnPath}`} className="text-white/90 text-sm font-medium flex items-center">
                           Learn more <FiArrowRight className="ml-1" />
                         </Link>
                       </div>
@@ -550,7 +535,7 @@ const HomeScreen = () => {
           className="px-4 mt-6 mb-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
+          transition={{ delay: 0.2, duration: 0.3 }}
         >
           <Link 
             to="/transactions" 
