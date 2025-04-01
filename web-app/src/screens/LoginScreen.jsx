@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FiPhone, FiLock, FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { useAuth } from '../contexts/AuthContext';
 import { formatPhoneNumber, formatPhoneForApi } from '../utils/formatters';
 import logo from '../assets/logo.svg';
@@ -10,8 +14,6 @@ const LoginScreen = () => {
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
@@ -19,13 +21,6 @@ const LoginScreen = () => {
     if (isAuthenticated) {
       navigate('/dashboard');
     }
-    
-    // Add animation classes after component mounts
-    const timer = setTimeout(() => {
-      document.querySelector('.logo-container')?.classList.add('logo-animated');
-    }, 300);
-    
-    return () => clearTimeout(timer);
   }, [isAuthenticated, navigate]);
 
   const handlePhoneChange = (e) => {
@@ -34,12 +29,17 @@ const LoginScreen = () => {
     setFormattedPhoneNumber(formatPhoneNumber(input));
   };
 
-  const showToastMessage = (message) => {
-    setToastMessage(message);
-    setShowToast(true);
-    setTimeout(() => {
-      setShowToast(false);
-    }, 3000);
+  const showToastMessage = (message, type = 'success') => {
+    toast[type](message, {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "dark",
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -76,147 +76,259 @@ const LoginScreen = () => {
         }, 1000);
       } else {
         setError(result.message || 'Failed to sign in. Please check your credentials.');
+        showToastMessage('Failed to sign in. Please check your credentials.', 'error');
       }
     } catch (err) {
       console.error('Login error:', err);
       setError(err.response?.data?.message || 'Failed to sign in. Please check your credentials.');
+      showToastMessage('Failed to sign in. Please check your credentials.', 'error');
     } finally {
       setLoading(false);
     }
   };
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        when: "beforeChildren",
+        staggerChildren: 0.1,
+        duration: 0.3
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { type: "spring", stiffness: 300, damping: 24 }
+    }
+  };
+
+  const logoVariants = {
+    hidden: { scale: 0.8, opacity: 0 },
+    visible: {
+      scale: 1,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 260,
+        damping: 20,
+        duration: 0.5
+      }
+    }
+  };
+
   return (
-    <div className="min-h-screen flex flex-col bg-background-dark text-text-primary relative overflow-hidden">
+    <motion.div 
+      className="min-h-screen flex flex-col bg-[#121212] text-white relative overflow-hidden"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-0 left-0 w-64 h-64 bg-primary/10 rounded-full filter blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary/10 rounded-full filter blur-3xl translate-x-1/3 translate-y-1/3"></div>
-        <div className="absolute top-1/3 right-1/4 w-48 h-48 bg-success/10 rounded-full filter blur-3xl"></div>
+        <motion.div 
+          className="absolute top-0 left-0 w-64 h-64 bg-blue-500/10 rounded-full filter blur-3xl"
+          animate={{ 
+            x: ["-50%", "-30%", "-50%"],
+            y: ["-50%", "-30%", "-50%"],
+          }}
+          transition={{ 
+            duration: 15,
+            repeat: Infinity,
+            repeatType: "reverse"
+          }}
+        />
+        <motion.div 
+          className="absolute bottom-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full filter blur-3xl"
+          animate={{ 
+            x: ["30%", "20%", "30%"],
+            y: ["30%", "20%", "30%"],
+          }}
+          transition={{ 
+            duration: 20,
+            repeat: Infinity,
+            repeatType: "reverse"
+          }}
+        />
+        <motion.div 
+          className="absolute top-1/3 right-1/4 w-48 h-48 bg-green-500/10 rounded-full filter blur-3xl"
+          animate={{ 
+            scale: [1, 1.2, 1],
+            opacity: [0.5, 0.7, 0.5],
+          }}
+          transition={{ 
+            duration: 10,
+            repeat: Infinity,
+            repeatType: "reverse"
+          }}
+        />
       </div>
 
-      {/* Toast Notification */}
-      {showToast && (
-        <div className="toast-container">
-          <div className="toast toast-success slide-in">
-            <div className="mr-2">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-success" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <span>{toastMessage}</span>
-          </div>
-        </div>
-      )}
+      <ToastContainer />
 
       <div className="flex-1 flex items-center justify-center p-6 z-10">
-        <div className="w-full max-w-md slide-up">
-          <div className="card p-8 border border-border">
-            <div className="flex justify-center mb-8">
-              <div className="logo-container relative">
-                <div className="absolute inset-0 bg-primary/20 rounded-full filter blur-md animate-pulse"></div>
+        <motion.div 
+          className="w-full max-w-md"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.div 
+            className="bg-[#1E1E1E] p-8 rounded-2xl border border-gray-800 shadow-xl"
+            whileHover={{ boxShadow: "0 0 20px rgba(59, 130, 246, 0.1)" }}
+          >
+            <motion.div 
+              className="flex justify-center mb-8"
+              variants={logoVariants}
+            >
+              <div className="relative">
+                <motion.div 
+                  className="absolute inset-0 bg-blue-500/20 rounded-full filter blur-md"
+                  animate={{ 
+                    scale: [1, 1.2, 1],
+                  }}
+                  transition={{ 
+                    duration: 3,
+                    repeat: Infinity,
+                    repeatType: "reverse"
+                  }}
+                />
                 <img 
                   src={logo} 
                   alt="NEDApay Logo" 
-                  className="h-20 relative z-10 transition-all duration-1000 logo-image"
+                  className="h-20 relative z-10"
                 />
-                <div className="logo-glow absolute inset-0 bg-primary/30 rounded-full filter blur-lg opacity-0 transition-opacity duration-1000"></div>
               </div>
-            </div>
+            </motion.div>
             
-            <h2 className="text-2xl font-bold text-center mb-6 animate-fade-in" style={{ animationDelay: '0.3s' }}>Welcome Back</h2>
+            <motion.h2 
+              className="text-2xl font-bold text-center mb-6 text-white"
+              variants={itemVariants}
+            >
+              Welcome Back
+            </motion.h2>
             
-            {error && (
-              <div className="bg-error/10 text-error p-4 rounded-lg mb-6 slide-up">
-                <div className="flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                  </svg>
-                  {error}
-                </div>
-              </div>
-            )}
+            <AnimatePresence>
+              {error && (
+                <motion.div 
+                  className="bg-red-500/10 text-red-400 p-4 rounded-lg mb-6"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                >
+                  <div className="flex items-center">
+                    <FiAlertCircle className="h-5 w-5 mr-2" />
+                    {error}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
             
-            <form onSubmit={handleSubmit} className="animate-fade-in" style={{ animationDelay: '0.4s' }}>
-              <div className="mb-6">
-                <label htmlFor="phoneNumber" className="block text-sm font-medium mb-2">
+            <motion.form 
+              onSubmit={handleSubmit}
+              variants={containerVariants}
+            >
+              <motion.div 
+                className="mb-6"
+                variants={itemVariants}
+              >
+                <label htmlFor="phoneNumber" className="block text-sm font-medium mb-2 text-gray-300">
                   Phone Number
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                    </svg>
+                    <FiPhone className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
                     id="phoneNumber"
                     type="tel"
                     value={formattedPhoneNumber}
                     onChange={handlePhoneChange}
-                    className="form-input pl-10"
+                    className="w-full bg-[#2A2A2A] border border-gray-700 rounded-lg py-3 pl-10 pr-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                     placeholder="+255 XXX XXX XXX"
                     disabled={loading}
                   />
                 </div>
-                <p className="text-xs text-text-secondary mt-2">
+                <p className="text-xs text-gray-500 mt-2">
                   Enter your Tanzanian phone number (e.g., 0744XXXXXX or +255744XXXXXX)
                 </p>
-              </div>
+              </motion.div>
               
-              <div className="mb-8">
-                <label htmlFor="pin" className="block text-sm font-medium mb-2">
+              <motion.div 
+                className="mb-8"
+                variants={itemVariants}
+              >
+                <label htmlFor="pin" className="block text-sm font-medium mb-2 text-gray-300">
                   PIN
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
+                    <FiLock className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
                     id="pin"
                     type="password"
                     value={pin}
                     onChange={(e) => setPin(e.target.value)}
-                    className="form-input pl-10"
+                    className="w-full bg-[#2A2A2A] border border-gray-700 rounded-lg py-3 pl-10 pr-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                     placeholder="Enter your 4-digit PIN"
                     maxLength={4}
                     disabled={loading}
                   />
                 </div>
-              </div>
+              </motion.div>
               
-              <button
+              <motion.button
                 type="submit"
-                className="btn btn-primary w-full"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center"
                 disabled={loading}
+                variants={itemVariants}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
                 {loading ? (
                   <div className="flex items-center justify-center">
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    <motion.div 
+                      className="w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2"
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    />
                     Signing In...
                   </div>
                 ) : 'Sign In'}
-              </button>
-            </form>
+              </motion.button>
+            </motion.form>
             
-            <div className="mt-8 text-center animate-fade-in" style={{ animationDelay: '0.6s' }}>
-              <p className="text-text-secondary">
+            <motion.div 
+              className="mt-8 text-center"
+              variants={itemVariants}
+            >
+              <p className="text-gray-400">
                 Don't have an account?{' '}
-                <Link to="/register" className="text-primary font-medium hover:underline">
+                <Link to="/register" className="text-blue-500 font-medium hover:text-blue-400 transition-colors duration-200">
                   Register
                 </Link>
               </p>
-            </div>
+            </motion.div>
 
-            <div className="mt-8 pt-6 border-t border-border text-center animate-fade-in" style={{ animationDelay: '0.7s' }}>
-              <p className="text-xs text-text-secondary">
+            <motion.div 
+              className="mt-8 pt-6 border-t border-gray-800 text-center"
+              variants={itemVariants}
+            >
+              <p className="text-xs text-gray-500">
                 For demo: Use phone +255744123456 and PIN 1234
               </p>
-            </div>
-          </div>
-        </div>
+            </motion.div>
+          </motion.div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

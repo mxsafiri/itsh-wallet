@@ -2,6 +2,53 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Html5Qrcode } from 'html5-qrcode';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FiArrowLeft, FiInfo, FiAlertTriangle, FiAlertCircle, FiCamera, FiUser, FiPhone, FiFileText, FiKey, FiCheckCircle, FiX } from 'react-icons/fi';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { 
+    opacity: 1,
+    transition: { 
+      when: "beforeChildren",
+      staggerChildren: 0.1
+    }
+  },
+  exit: { 
+    opacity: 0,
+    transition: { when: "afterChildren" }
+  }
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: { 
+    y: 0, 
+    opacity: 1,
+    transition: { type: "spring", stiffness: 300, damping: 24 }
+  },
+  exit: { y: -20, opacity: 0 }
+};
+
+const buttonVariants = {
+  rest: { scale: 1 },
+  hover: { scale: 1.05 },
+  tap: { scale: 0.95 }
+};
+
+const scannerFrameVariants = {
+  scanning: {
+    boxShadow: ['0 0 0 0px rgba(59, 130, 246, 0.5)', '0 0 0 4px rgba(59, 130, 246, 0.5)'],
+    transition: {
+      duration: 1.5,
+      repeat: Infinity,
+      repeatType: "reverse"
+    }
+  }
+};
 
 const ScanScreen = () => {
   const { user } = useAuth();
@@ -10,8 +57,6 @@ const ScanScreen = () => {
   const [scanning, setScanning] = useState(true);
   const [error, setError] = useState('');
   const [paymentData, setPaymentData] = useState(null);
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
   const [cameraPermission, setCameraPermission] = useState('pending'); // 'pending', 'granted', 'denied'
   const scannerRef = useRef(null);
   const html5QrCodeRef = useRef(null);
@@ -68,7 +113,7 @@ const ScanScreen = () => {
     )
     .then(() => {
       setScanning(true);
-      showToastMessage('Camera started');
+      toast.success('Camera started');
     })
     .catch((err) => {
       console.error('Failed to start camera:', err);
@@ -88,7 +133,7 @@ const ScanScreen = () => {
   const handleScanSuccess = (decodedText) => {
     setScanning(false);
     stopScanner();
-    showToastMessage('QR code detected');
+    toast.success('QR code detected');
     
     try {
       // For demo purposes, create a mock payment data
@@ -157,188 +202,290 @@ const ScanScreen = () => {
     startScanner();
   };
 
-  const showToastMessage = (message) => {
-    setToastMessage(message);
-    setShowToast(true);
-    setTimeout(() => {
-      setShowToast(false);
-    }, 3000);
-  };
-
   const handleManualEntry = () => {
     navigate('/send');
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background-dark text-text-primary pb-16">
-      {/* Toast Notification */}
-      {showToast && (
-        <div className="toast-container">
-          <div className="toast toast-success slide-in">
-            <div className="mr-2">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-success" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <span>{toastMessage}</span>
-          </div>
-        </div>
-      )}
+    <motion.div 
+      className="min-h-screen flex flex-col bg-gray-900 text-gray-100 pb-16"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      {/* Toast Container */}
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
 
       {/* Header */}
-      <header className="wallet-header" style={{ paddingBottom: 'var(--spacing-md)' }}>
+      <motion.header 
+        className="p-4 border-b border-gray-800 bg-gray-900"
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.1 }}
+      >
         <div className="flex items-center">
-          <button 
+          <motion.button 
             onClick={() => navigate('/home')} 
-            className="mr-3 btn-icon btn-secondary"
+            className="mr-3 p-2 rounded-full bg-gray-800 text-gray-200 hover:bg-gray-700"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-          </button>
+            <FiArrowLeft className="h-5 w-5" />
+          </motion.button>
           <h1 className="text-xl font-bold">Scan QR Code</h1>
         </div>
-      </header>
+      </motion.header>
 
       <div className="flex-1 p-6">
-        {error && (
-          <div className="bg-error/10 text-error p-4 rounded-lg mb-6 slide-up">
-            <div className="flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-              </svg>
-              {error}
-            </div>
-            <button 
-              onClick={handleTryAgain}
-              className="btn btn-error w-full mt-3"
+        <AnimatePresence mode="wait">
+          {error && (
+            <motion.div 
+              key="error"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="bg-red-900/20 border border-red-800 text-red-400 p-4 rounded-xl mb-6"
             >
-              Try Again
-            </button>
-          </div>
-        )}
+              <motion.div variants={itemVariants} className="flex items-center">
+                <FiAlertCircle className="h-5 w-5 mr-2" />
+                <span>{error}</span>
+              </motion.div>
+              <motion.button 
+                variants={buttonVariants}
+                whileHover="hover"
+                whileTap="tap"
+                onClick={handleTryAgain}
+                className="w-full mt-3 p-3 bg-red-800/30 hover:bg-red-800/50 rounded-lg text-red-300 font-medium transition-colors"
+              >
+                Try Again
+              </motion.button>
+            </motion.div>
+          )}
 
-        {cameraPermission === 'denied' && (
-          <div className="card bg-warning/10 text-warning mb-6 slide-up">
-            <div className="flex items-start">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-              </svg>
-              <div>
-                <p className="font-medium">Camera access denied</p>
-                <p className="text-sm mt-1">
-                  Please enable camera access in your browser settings to scan QR codes.
-                </p>
-                <button 
-                  onClick={handleManualEntry}
-                  className="btn btn-warning mt-3"
-                >
-                  Enter Payment Details Manually
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {scanning && cameraPermission !== 'denied' ? (
-          <div className="space-y-6 slide-up">
-            <div className="card p-4 text-center">
-              <div 
-                id="qr-scanner" 
-                ref={scannerRef}
-                className="w-full h-64 md:h-80 bg-background-card rounded-lg overflow-hidden"
-              ></div>
-              
-              <div className="mt-4 flex items-center justify-center">
-                <div className="w-3 h-3 bg-primary rounded-full mr-2 pulse-animation"></div>
-                <p className="text-text-secondary">
-                  Position the QR code within the frame to scan
-                </p>
-              </div>
-            </div>
-            
-            <div className="card bg-primary/10 text-primary">
-              <div className="flex items-start">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                </svg>
+          {cameraPermission === 'denied' && (
+            <motion.div 
+              key="permission-denied"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="bg-yellow-900/20 border border-yellow-800 text-yellow-400 p-4 rounded-xl mb-6"
+            >
+              <motion.div variants={itemVariants} className="flex items-start">
+                <FiAlertTriangle className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="text-sm">
-                    Scan a NEDApay QR code to make a payment. Make sure the QR code is well-lit and clearly visible.
+                  <p className="font-medium">Camera access denied</p>
+                  <p className="text-sm mt-1 text-yellow-500/80">
+                    Please enable camera access in your browser settings to scan QR codes.
                   </p>
+                  <motion.button 
+                    variants={buttonVariants}
+                    whileHover="hover"
+                    whileTap="tap"
+                    onClick={handleManualEntry}
+                    className="mt-3 p-3 bg-yellow-800/30 hover:bg-yellow-800/50 rounded-lg text-yellow-300 font-medium transition-colors"
+                  >
+                    Enter Payment Details Manually
+                  </motion.button>
                 </div>
-              </div>
-            </div>
-            
-            <button
-              onClick={handleManualEntry}
-              className="btn btn-secondary w-full"
+              </motion.div>
+            </motion.div>
+          )}
+
+          {scanning && cameraPermission !== 'denied' ? (
+            <motion.div 
+              key="scanning"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="space-y-6"
             >
-              Enter Payment Details Manually
-            </button>
-          </div>
-        ) : paymentData ? (
-          <div className="space-y-6 slide-up">
-            <div className="card">
-              <h3 className="text-lg font-semibold mb-4">Payment Details</h3>
+              <motion.div 
+                variants={itemVariants} 
+                className="bg-gray-800 border border-gray-700 p-4 rounded-xl text-center"
+              >
+                <motion.div 
+                  variants={scannerFrameVariants}
+                  animate="scanning"
+                  className="w-full h-64 md:h-80 bg-gray-900 rounded-lg overflow-hidden relative"
+                >
+                  <div 
+                    id="qr-scanner" 
+                    ref={scannerRef}
+                    className="w-full h-full"
+                  ></div>
+                  <motion.div 
+                    className="absolute inset-0 border-2 border-blue-500 rounded-lg pointer-events-none"
+                    initial={{ opacity: 0.6 }}
+                    animate={{ 
+                      opacity: [0.4, 0.8],
+                      scale: [0.98, 1.02],
+                    }}
+                    transition={{ 
+                      duration: 2,
+                      repeat: Infinity,
+                      repeatType: "reverse"
+                    }}
+                  />
+                </motion.div>
+                
+                <motion.div 
+                  variants={itemVariants}
+                  className="mt-4 flex items-center justify-center"
+                >
+                  <div className="w-3 h-3 bg-blue-500 rounded-full mr-2 animate-pulse"></div>
+                  <p className="text-gray-400">
+                    Position the QR code within the frame to scan
+                  </p>
+                </motion.div>
+              </motion.div>
               
-              <div className="space-y-4">
-                <div className="flex justify-between">
-                  <span className="text-text-secondary">Amount</span>
-                  <span className="font-medium">{parseFloat(paymentData.amount).toLocaleString()} iTZS</span>
-                </div>
-                
-                <div className="flex justify-between">
-                  <span className="text-text-secondary">Recipient</span>
-                  <span className="font-medium">
-                    {paymentData.recipientName || 'Unknown'}
-                  </span>
-                </div>
-                
-                <div className="flex justify-between">
-                  <span className="text-text-secondary">Phone</span>
-                  <span className="font-medium">
-                    {paymentData.recipientPhone || 'N/A'}
-                  </span>
-                </div>
-                
-                {paymentData.memo && (
-                  <div className="flex justify-between">
-                    <span className="text-text-secondary">Memo</span>
-                    <span className="font-medium">{paymentData.memo}</span>
+              <motion.div 
+                variants={itemVariants}
+                className="bg-blue-900/20 border border-blue-800 text-blue-400 p-4 rounded-xl"
+              >
+                <div className="flex items-start">
+                  <FiInfo className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm">
+                      Scan a NEDApay QR code to make a payment. Make sure the QR code is well-lit and clearly visible.
+                    </p>
                   </div>
-                )}
+                </div>
+              </motion.div>
+              
+              <motion.button
+                variants={buttonVariants}
+                whileHover="hover"
+                whileTap="tap"
+                onClick={handleManualEntry}
+                className="w-full p-3 bg-gray-800 hover:bg-gray-700 rounded-lg text-gray-200 font-medium transition-colors"
+              >
+                <FiCamera className="inline mr-2" />
+                Enter Payment Details Manually
+              </motion.button>
+            </motion.div>
+          ) : paymentData ? (
+            <motion.div 
+              key="payment-details"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="space-y-6"
+            >
+              <motion.div 
+                variants={itemVariants}
+                className="bg-gray-800 border border-gray-700 p-5 rounded-xl"
+              >
+                <h3 className="text-lg font-semibold mb-4 text-blue-400">Payment Details</h3>
                 
-                <div className="pt-2 mt-2 border-t border-border">
-                  <div className="flex justify-between items-center">
-                    <span className="text-text-secondary">Stellar Address</span>
-                    <span className="font-mono text-xs text-text-secondary truncate max-w-[180px]">
-                      {paymentData.destination}
+                <div className="space-y-4">
+                  <motion.div 
+                    variants={itemVariants}
+                    className="flex justify-between items-center p-3 bg-gray-900/60 rounded-lg"
+                  >
+                    <span className="text-gray-400">Amount</span>
+                    <span className="font-medium text-lg">{parseFloat(paymentData.amount).toLocaleString()} iTZS</span>
+                  </motion.div>
+                  
+                  <motion.div 
+                    variants={itemVariants}
+                    className="flex justify-between items-center p-3 bg-gray-900/60 rounded-lg"
+                  >
+                    <div className="flex items-center">
+                      <FiUser className="mr-2 text-gray-500" />
+                      <span className="text-gray-400">Recipient</span>
+                    </div>
+                    <span className="font-medium">
+                      {paymentData.recipientName || 'Unknown'}
                     </span>
-                  </div>
+                  </motion.div>
+                  
+                  <motion.div 
+                    variants={itemVariants}
+                    className="flex justify-between items-center p-3 bg-gray-900/60 rounded-lg"
+                  >
+                    <div className="flex items-center">
+                      <FiPhone className="mr-2 text-gray-500" />
+                      <span className="text-gray-400">Phone</span>
+                    </div>
+                    <span className="font-medium">
+                      {paymentData.recipientPhone || 'N/A'}
+                    </span>
+                  </motion.div>
+                  
+                  {paymentData.memo && (
+                    <motion.div 
+                      variants={itemVariants}
+                      className="flex justify-between items-center p-3 bg-gray-900/60 rounded-lg"
+                    >
+                      <div className="flex items-center">
+                        <FiFileText className="mr-2 text-gray-500" />
+                        <span className="text-gray-400">Memo</span>
+                      </div>
+                      <span className="font-medium">{paymentData.memo}</span>
+                    </motion.div>
+                  )}
+                  
+                  <motion.div 
+                    variants={itemVariants}
+                    className="pt-2 mt-2 border-t border-gray-700"
+                  >
+                    <div className="flex justify-between items-center p-3 bg-gray-900/60 rounded-lg mt-2">
+                      <div className="flex items-center">
+                        <FiKey className="mr-2 text-gray-500" />
+                        <span className="text-gray-400">Stellar Address</span>
+                      </div>
+                      <span className="font-mono text-xs text-gray-400 truncate max-w-[180px]">
+                        {paymentData.destination}
+                      </span>
+                    </div>
+                  </motion.div>
                 </div>
-              </div>
-              
-              <div className="mt-6 space-y-4">
-                <button
-                  onClick={handleProceedToPayment}
-                  className="btn btn-primary w-full"
-                >
-                  Proceed to Payment
-                </button>
                 
-                <button
-                  onClick={handleTryAgain}
-                  className="btn btn-secondary w-full"
-                >
-                  Scan Again
-                </button>
-              </div>
-            </div>
-          </div>
-        ) : null}
+                <div className="mt-6 space-y-4">
+                  <motion.button
+                    variants={buttonVariants}
+                    whileHover="hover"
+                    whileTap="tap"
+                    onClick={handleProceedToPayment}
+                    className="w-full p-3 bg-blue-600 hover:bg-blue-500 rounded-lg text-white font-medium transition-colors flex items-center justify-center"
+                  >
+                    <FiCheckCircle className="mr-2" />
+                    Proceed to Payment
+                  </motion.button>
+                  
+                  <motion.button
+                    variants={buttonVariants}
+                    whileHover="hover"
+                    whileTap="tap"
+                    onClick={handleTryAgain}
+                    className="w-full p-3 bg-gray-700 hover:bg-gray-600 rounded-lg text-gray-200 font-medium transition-colors flex items-center justify-center"
+                  >
+                    <FiCamera className="mr-2" />
+                    Scan Again
+                  </motion.button>
+                </div>
+              </motion.div>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

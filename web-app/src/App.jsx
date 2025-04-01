@@ -4,6 +4,8 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { TransactionProvider } from './contexts/TransactionContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { AnimatePresence, motion } from 'framer-motion';
+import { FiHome, FiAlertCircle } from 'react-icons/fi';
 
 // Import screens
 import WelcomeScreen from './screens/WelcomeScreen';
@@ -19,9 +21,31 @@ import SettingsScreen from './screens/SettingsScreen';
 
 // Loading component
 const LoadingScreen = () => (
-  <div className="flex items-center justify-center h-screen bg-green-600">
-    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
-  </div>
+  <motion.div 
+    className="flex items-center justify-center h-screen bg-gray-900"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+  >
+    <div className="flex flex-col items-center">
+      <div className="relative">
+        <div className="w-16 h-16 border-4 border-blue-500/30 rounded-full"></div>
+        <motion.div 
+          className="absolute top-0 left-0 w-16 h-16 border-4 border-t-blue-500 border-r-blue-500 border-b-transparent border-l-transparent rounded-full"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+        ></motion.div>
+      </div>
+      <motion.p 
+        className="mt-4 text-gray-400 font-medium"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5 }}
+      >
+        Loading NEDApay...
+      </motion.p>
+    </div>
+  </motion.div>
 );
 
 // Protected route component
@@ -59,16 +83,42 @@ const PublicRoute = ({ children }) => {
 // Not Found component
 const NotFound = () => {
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-green-600 text-white p-4">
-      <h1 className="text-3xl font-bold mb-4">Page Not Found</h1>
-      <p className="mb-6">The page you are looking for doesn't exist or has been moved.</p>
-      <button 
-        onClick={() => window.location.href = '/'}
-        className="bg-white text-green-600 font-bold py-2 px-6 rounded-full"
+    <motion.div 
+      className="flex flex-col items-center justify-center h-screen bg-gray-900 text-gray-100 p-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <FiAlertCircle className="text-red-500 w-16 h-16 mb-4" />
+      <motion.h1 
+        className="text-3xl font-bold mb-4 text-blue-400"
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.2 }}
       >
+        Page Not Found
+      </motion.h1>
+      <motion.p 
+        className="mb-6 text-gray-400 text-center max-w-md"
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.3 }}
+      >
+        The page you are looking for doesn't exist or has been moved.
+      </motion.p>
+      <motion.button 
+        onClick={() => window.location.href = '/'}
+        className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-lg flex items-center"
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.4 }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        <FiHome className="mr-2" />
         Go to Home
-      </button>
-    </div>
+      </motion.button>
+    </motion.div>
   );
 };
 
@@ -78,99 +128,101 @@ function App() {
       <TransactionProvider>
         <Router>
           <Suspense fallback={<LoadingScreen />}>
-            <Routes>
-              {/* Public routes */}
-              <Route 
-                path="/" 
-                element={
-                  <PublicRoute>
-                    <WelcomeScreen />
-                  </PublicRoute>
-                } 
-              />
-              <Route 
-                path="/login" 
-                element={
-                  <PublicRoute>
-                    <LoginScreen />
-                  </PublicRoute>
-                } 
-              />
-              <Route 
-                path="/register" 
-                element={
-                  <PublicRoute>
-                    <RegisterScreen />
-                  </PublicRoute>
-                } 
-              />
-              
-              {/* Protected routes */}
-              <Route 
-                path="/home" 
-                element={
-                  <ProtectedRoute>
-                    <HomeScreen />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/send" 
-                element={
-                  <ProtectedRoute>
-                    <SendScreen />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/receive" 
-                element={
-                  <ProtectedRoute>
-                    <ReceiveScreen />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/scan" 
-                element={
-                  <ProtectedRoute>
-                    <ScanScreen />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/transactions" 
-                element={
-                  <ProtectedRoute>
-                    <TransactionHistoryScreen />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/security" 
-                element={
-                  <ProtectedRoute>
-                    <SecurityScreen />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/settings" 
-                element={
-                  <ProtectedRoute>
-                    <SettingsScreen />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              {/* Fallback route */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <AnimatePresence mode="wait">
+              <Routes>
+                {/* Public routes */}
+                <Route 
+                  path="/" 
+                  element={
+                    <PublicRoute>
+                      <WelcomeScreen />
+                    </PublicRoute>
+                  } 
+                />
+                <Route 
+                  path="/login" 
+                  element={
+                    <PublicRoute>
+                      <LoginScreen />
+                    </PublicRoute>
+                  } 
+                />
+                <Route 
+                  path="/register" 
+                  element={
+                    <PublicRoute>
+                      <RegisterScreen />
+                    </PublicRoute>
+                  } 
+                />
+                
+                {/* Protected routes */}
+                <Route 
+                  path="/home" 
+                  element={
+                    <ProtectedRoute>
+                      <HomeScreen />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/send" 
+                  element={
+                    <ProtectedRoute>
+                      <SendScreen />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/receive" 
+                  element={
+                    <ProtectedRoute>
+                      <ReceiveScreen />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/scan" 
+                  element={
+                    <ProtectedRoute>
+                      <ScanScreen />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/transactions" 
+                  element={
+                    <ProtectedRoute>
+                      <TransactionHistoryScreen />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/security" 
+                  element={
+                    <ProtectedRoute>
+                      <SecurityScreen />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/settings" 
+                  element={
+                    <ProtectedRoute>
+                      <SettingsScreen />
+                    </ProtectedRoute>
+                  } 
+                />
+                
+                {/* Fallback route */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </AnimatePresence>
           </Suspense>
         </Router>
         <ToastContainer
-          position="top-right"
-          autoClose={5000}
+          position="top-center"
+          autoClose={3000}
           hideProgressBar={false}
           newestOnTop
           closeOnClick
