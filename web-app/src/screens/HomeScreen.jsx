@@ -144,42 +144,42 @@ const HomeScreen = () => {
   const educationalCards = [
     {
       id: 1,
-      title: "More for your finances",
-      subtitle: "Zaidi kwa fedha zako",
+      title: "Send it.",
+      subtitle: "Spend it. Stash it.",
       description: "Send money instantly to anyone in Tanzania",
-      descriptionSwahili: "Tuma pesa mara moja kwa mtu yeyote Tanzania",
+      descriptionSwahili: "Tuma pesa mara moja kwa mtu yeyote",
       icon: <FiSend className="h-8 w-8" />,
-      color: "from-blue-500 to-blue-600",
+      color: "from-blue-500/90 to-blue-600/90",
       textColor: "text-blue-100"
     },
     {
       id: 2,
       title: "No hidden fees",
-      subtitle: "Fanya Malipo Bila makato",
-      description: "Transparent transactions with zero hidden costs",
-      descriptionSwahili: "Miamala inayoonekana bila gharama zozote zilizofichwa",
+      subtitle: "Transparent transactions",
+      description: "Zero costs on all your payments",
+      descriptionSwahili: "Hakuna gharama zozote zilizofichwa",
       icon: <FiShield className="h-8 w-8" />,
-      color: "from-green-500 to-green-600",
+      color: "from-green-500/90 to-green-600/90",
       textColor: "text-green-100"
     },
     {
       id: 3,
       title: "Secure & Fast",
-      subtitle: "Salama & Haraka",
-      description: "Blockchain-powered security for your money",
-      descriptionSwahili: "Usalama wa blockchain kwa fedha zako",
+      subtitle: "Blockchain-powered",
+      description: "Advanced security for your money",
+      descriptionSwahili: "Usalama wa hali ya juu",
       icon: <FiLock className="h-8 w-8" />,
-      color: "from-purple-500 to-purple-600",
+      color: "from-purple-500/90 to-purple-600/90",
       textColor: "text-purple-100"
     },
     {
       id: 4,
       title: "For Everyone",
-      subtitle: "Kwa Kila Mtu",
-      description: "Accessible financial services for all Tanzanians",
-      descriptionSwahili: "Huduma za kifedha zinazopatikana kwa Watanzania wote",
+      subtitle: "Financial inclusion",
+      description: "Banking for all Tanzanians",
+      descriptionSwahili: "Huduma za benki kwa wote",
       icon: <FiUsers className="h-8 w-8" />,
-      color: "from-yellow-500 to-yellow-600",
+      color: "from-yellow-500/90 to-yellow-600/90",
       textColor: "text-yellow-100"
     }
   ];
@@ -475,46 +475,63 @@ const HomeScreen = () => {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.5 }}
         >
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-bold text-white">More for your finances</h3>
-            <Link to="/learn" className="text-blue-400 text-sm font-medium flex items-center">
-              Learn more <FiArrowRight className="ml-1" />
-            </Link>
+          <div className="mb-6">
+            <h3 className="text-2xl font-bold text-white mb-1">NEDApay</h3>
           </div>
           
           <div className="relative">
-            {/* Scrollable Cards */}
+            {/* Scrollable Cards - Apple-style design */}
             <div 
-              className="flex overflow-x-auto pb-4 hide-scrollbar snap-x snap-mandatory"
+              className="flex overflow-x-auto pb-6 hide-scrollbar snap-x snap-mandatory"
               ref={cardsRef}
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
               {educationalCards.map((card, index) => (
                 <motion.div
                   key={card.id}
-                  className={`min-w-[280px] h-[200px] mr-4 rounded-2xl p-5 flex flex-col justify-between snap-center bg-gradient-to-br ${card.color} shadow-lg`}
+                  className={`min-w-[300px] mr-4 rounded-2xl overflow-hidden snap-center shadow-lg relative`}
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.1 * index, duration: 0.4 }}
                   whileHover={{ y: -5 }}
                 >
-                  <div>
-                    <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center mb-4">
-                      {card.icon}
+                  {/* Card background with gradient */}
+                  <div className={`absolute inset-0 bg-gradient-to-br ${card.color}`}></div>
+                  
+                  {/* Card content with Apple-inspired typography */}
+                  <div className="relative p-6 flex flex-col h-full justify-between">
+                    <div>
+                      {/* Icon in circle */}
+                      <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mb-5">
+                        {card.icon}
+                      </div>
+                      
+                      {/* Main title - large and bold */}
+                      <h4 className="text-3xl font-bold text-white leading-tight mb-1">{card.title}</h4>
+                      
+                      {/* Subtitle - medium size */}
+                      <p className="text-xl font-medium text-white/90 mb-4">{card.subtitle}</p>
                     </div>
-                    <h4 className="text-xl font-bold text-white mb-1">{card.title}</h4>
-                    <p className="text-sm font-medium mb-3 opacity-80">{card.subtitle}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-white mb-1">{card.description}</p>
-                    <p className={`text-xs ${card.textColor} font-medium`}>{card.descriptionSwahili}</p>
+                    
+                    <div>
+                      {/* Description - smaller and lighter */}
+                      <p className="text-base text-white/80 mb-1">{card.description}</p>
+                      <p className={`text-sm ${card.textColor} font-medium`}>{card.descriptionSwahili}</p>
+                      
+                      {/* Learn more link at bottom */}
+                      <div className="mt-4 flex justify-end">
+                        <Link to="/learn" className="text-white/90 text-sm font-medium flex items-center">
+                          Learn more <FiArrowRight className="ml-1" />
+                        </Link>
+                      </div>
+                    </div>
                   </div>
                 </motion.div>
               ))}
             </div>
             
             {/* Card Indicators */}
-            <div className="flex justify-center mt-4">
+            <div className="flex justify-center mt-2">
               {educationalCards.map((_, index) => (
                 <motion.button
                   key={index}
