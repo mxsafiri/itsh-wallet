@@ -8,7 +8,8 @@ import { formatDistanceToNow } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FiArrowLeft, FiPhone, FiUser, FiDollarSign, FiEdit3, FiCheck,
-  FiHome, FiList, FiLock, FiSettings, FiClock, FiRefreshCw
+  FiHome, FiList, FiLock, FiSettings, FiClock, FiRefreshCw,
+  FiArrowRight, FiShield, FiAlertCircle, FiCheckCircle
 } from 'react-icons/fi';
 
 const SendScreen = () => {
@@ -20,7 +21,8 @@ const SendScreen = () => {
   } = useTransaction();
   const navigate = useNavigate();
   
-  const [step, setStep] = useState(1); // 1: Enter phone, 2: Enter amount, 3: Confirm, 4: Success
+  // Modified flow: 1: Enter amount, 2: Enter recipient, 3: Confirm, 4: Processing, 5: Success
+  const [step, setStep] = useState(1);
   const [recipientPhone, setRecipientPhone] = useState('');
   const [recipientInfo, setRecipientInfo] = useState(null);
   const [amount, setAmount] = useState('');
@@ -29,6 +31,15 @@ const SendScreen = () => {
   const [error, setError] = useState('');
   const [transactionId, setTransactionId] = useState('');
   const [quickAmounts, setQuickAmounts] = useState([1000, 5000, 10000, 20000]);
+  const [processingProgress, setProcessingProgress] = useState(0);
+  const [processingStatus, setProcessingStatus] = useState('Initiating transaction...');
+  const [processingSteps, setProcessingSteps] = useState([
+    { id: 'init', text: 'Initiating transaction...', completed: false },
+    { id: 'verify', text: 'Verifying account details...', completed: false },
+    { id: 'secure', text: 'Securing connection...', completed: false },
+    { id: 'process', text: 'Processing payment...', completed: false },
+    { id: 'confirm', text: 'Confirming transfer...', completed: false }
+  ]);
 
   // Format phone number as user types
   const formatPhoneNumber = (input) => {
@@ -64,7 +75,7 @@ const SendScreen = () => {
       if (foundUser) {
         setRecipientInfo(foundUser);
         toast.success('Recipient found', { theme: 'dark' });
-        setStep(2);
+        setStep(3); // Go directly to confirm step
       } else {
         setError('User not found. Please check the phone number and try again.');
         toast.error('User not found', { theme: 'dark' });
@@ -82,7 +93,7 @@ const SendScreen = () => {
     setRecipientPhone(recipient.phoneNumber);
     setRecipientInfo(recipient);
     toast.success('Recipient selected', { theme: 'dark' });
-    setStep(2);
+    setStep(3); // Go directly to confirm step
   };
 
   const handleAmountSubmit = (e) => {
@@ -104,7 +115,7 @@ const SendScreen = () => {
     }
     
     toast.success('Amount confirmed', { theme: 'dark' });
-    setStep(3);
+    setStep(2); // Go to recipient selection
   };
 
   const handleQuickAmount = (value) => {
@@ -113,32 +124,69 @@ const SendScreen = () => {
 
   const handleSendPayment = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
+    setStep(4); // Move to processing step
     
-    try {
-      const numAmount = parseFloat(amount);
-      
-      // Use the transaction context to send payment
-      const result = await sendPayment(
-        recipientInfo.phoneNumber,
-        numAmount,
-        memo
-      );
-      
-      if (result.success) {
-        setTransactionId(result.transaction.id);
-        setStep(4);
-      } else {
-        throw new Error(result.error || 'Transaction failed');
+    // Simulate processing steps
+    let currentStep = 0;
+    const totalSteps = processingSteps.length;
+    
+    const simulateProcessing = () => {
+      const timer = setInterval(() => {
+        if (currentStep < totalSteps) {
+          // Update current processing step
+          setProcessingSteps(prevSteps => {
+            const newSteps = [...prevSteps];
+            newSteps[currentStep].completed = true;
+            return newSteps;
+          });
+          
+          // Update progress percentage
+          setProcessingProgress(((currentStep + 1) / totalSteps) * 100);
+          
+          // Update status text
+          setProcessingStatus(processingSteps[currentStep].text);
+          
+          currentStep++;
+        } else {
+          clearInterval(timer);
+          
+          // Complete the transaction
+          completeTransaction();
+        }
+      }, 800); // Each step takes 800ms
+    };
+    
+    const completeTransaction = async () => {
+      try {
+        const numAmount = parseFloat(amount);
+        
+        // Use the transaction context to send payment
+        const result = await sendPayment(
+          recipientInfo.phoneNumber,
+          numAmount,
+          memo
+        );
+        
+        if (result.success) {
+          setTransactionId(result.transaction.id);
+          
+          // Short delay before showing success screen
+          setTimeout(() => {
+            setStep(5); // Move to success screen
+          }, 500);
+        } else {
+          throw new Error(result.error || 'Transaction failed');
+        }
+      } catch (err) {
+        console.error('Error sending payment:', err);
+        setError('Transaction failed. Please try again.');
+        toast.error('Transaction failed', { theme: 'dark' });
+        setStep(3); // Go back to confirm step
       }
-    } catch (err) {
-      console.error('Error sending payment:', err);
-      setError('Transaction failed. Please try again.');
-      toast.error('Transaction failed', { theme: 'dark' });
-    } finally {
-      setLoading(false);
-    }
+    };
+    
+    // Start the simulation
+    simulateProcessing();
   };
 
   const getInitials = (name) => {
@@ -218,7 +266,7 @@ const SendScreen = () => {
       {/* Main Content */}
       <div className="flex-1 p-4">
         <AnimatePresence mode="wait">
-          {/* Step 1: Enter Recipient */}
+          {/* Step 1: Enter Amount (New First Step) */}
           {step === 1 && (
             <motion.div 
               key="step1"
@@ -232,7 +280,111 @@ const SendScreen = () => {
                 variants={itemVariants}
                 className="text-xl font-bold mb-4 text-text"
               >
-                Enter Recipient
+                How much do you want to send?
+              </motion.h2>
+              
+              {/* Amount Form */}
+              <motion.div variants={itemVariants}>
+                <form onSubmit={handleAmountSubmit} className="card p-4">
+                  <div className="mb-6">
+                    <div className="text-center mb-4">
+                      <div className="relative">
+                        <input
+                          type="number"
+                          id="amount"
+                          value={amount}
+                          onChange={(e) => setAmount(e.target.value)}
+                          placeholder="0"
+                          className="input text-center text-3xl font-bold py-6"
+                          required
+                          autoFocus
+                        />
+                        <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-xl text-primary font-medium">
+                          iTZS
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-xs text-text-secondary mt-2 flex justify-between">
+                      <span>Available balance:</span> 
+                      <span className="text-text font-medium">{user?.iTZSAmount?.toLocaleString() || '50,000'} iTZS</span>
+                    </p>
+                  </div>
+                  
+                  {/* Quick Amounts */}
+                  <div className="mb-6">
+                    <p className="text-sm text-text-secondary mb-2">Quick Amounts</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {quickAmounts.map((quickAmount, index) => (
+                        <motion.button
+                          key={quickAmount}
+                          type="button"
+                          onClick={() => handleQuickAmount(quickAmount)}
+                          className="bg-background-hover hover:bg-primary/10 p-3 rounded-lg text-center transition-colors"
+                          whileHover={{ scale: 1.03 }}
+                          whileTap={{ scale: 0.97 }}
+                          variants={itemVariants}
+                          transition={{ delay: index * 0.05 }}
+                        >
+                          {quickAmount.toLocaleString()} iTZS
+                        </motion.button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Memo Field */}
+                  <motion.div className="mb-6" variants={itemVariants}>
+                    <label htmlFor="memo" className="block text-sm text-text-secondary mb-2 flex items-center">
+                      <FiEdit3 className="mr-2 h-4 w-4" /> Memo (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      id="memo"
+                      value={memo}
+                      onChange={(e) => setMemo(e.target.value)}
+                      placeholder="What's this payment for?"
+                      className="input"
+                    />
+                  </motion.div>
+                  
+                  {error && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mb-4 p-3 bg-error/10 text-error rounded-md text-sm"
+                    >
+                      {error}
+                    </motion.div>
+                  )}
+                  
+                  <motion.button
+                    type="submit"
+                    className="btn btn-primary w-full"
+                    disabled={!amount || loading}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    Continue
+                  </motion.button>
+                </form>
+              </motion.div>
+            </motion.div>
+          )}
+          
+          {/* Step 2: Enter Recipient (Now Second Step) */}
+          {step === 2 && (
+            <motion.div 
+              key="step2"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="h-full"
+            >
+              <motion.h2 
+                variants={itemVariants}
+                className="text-xl font-bold mb-4 text-text"
+              >
+                Who are you sending {parseFloat(amount).toLocaleString()} iTZS to?
               </motion.h2>
               
               {/* Recent Recipients */}
@@ -286,145 +438,13 @@ const SendScreen = () => {
                         placeholder="+255744123456"
                         className="input pl-10"
                         required
+                        autoFocus
                       />
                     </div>
                     <p className="text-xs text-text-secondary mt-2">
                       Enter a Tanzanian phone number (format: +255XXXXXXXXX)
                     </p>
                   </div>
-                  
-                  {error && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="mb-4 p-3 bg-error/10 text-error rounded-md text-sm"
-                    >
-                      {error}
-                    </motion.div>
-                  )}
-                  
-                  <motion.button
-                    type="submit"
-                    className="btn btn-primary w-full"
-                    disabled={loading}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    {loading ? (
-                      <div className="flex items-center justify-center">
-                        <FiRefreshCw className="animate-spin h-5 w-5 mr-2" />
-                        Finding...
-                      </div>
-                    ) : (
-                      'Continue'
-                    )}
-                  </motion.button>
-                </form>
-              </motion.div>
-            </motion.div>
-          )}
-          
-          {/* Step 2: Enter Amount */}
-          {step === 2 && (
-            <motion.div 
-              key="step2"
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              className="h-full"
-            >
-              <motion.h2 
-                variants={itemVariants}
-                className="text-xl font-bold mb-4 text-text"
-              >
-                Enter Amount
-              </motion.h2>
-              
-              {/* Recipient Info */}
-              <motion.div 
-                variants={itemVariants}
-                className="card p-4 mb-4 flex items-center"
-              >
-                <div className="avatar w-12 h-12 mr-4">
-                  {getInitials(recipientInfo.name)}
-                </div>
-                <div>
-                  <p className="font-medium text-text">{recipientInfo.name}</p>
-                  <p className="text-sm text-text-secondary">{recipientInfo.phoneNumber}</p>
-                </div>
-                <motion.button 
-                  onClick={() => setStep(1)} 
-                  className="ml-auto text-primary"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  Change
-                </motion.button>
-              </motion.div>
-              
-              {/* Amount Form */}
-              <motion.div variants={itemVariants}>
-                <form onSubmit={handleAmountSubmit} className="card p-4">
-                  <div className="mb-6">
-                    <label htmlFor="amount" className="block text-sm text-text-secondary mb-2">
-                      Amount (iTZS)
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <FiDollarSign className="h-5 w-5 text-primary" />
-                      </div>
-                      <input
-                        type="number"
-                        id="amount"
-                        value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
-                        placeholder="0"
-                        className="input pl-10 text-xl font-bold"
-                        required
-                      />
-                    </div>
-                    <p className="text-xs text-text-secondary mt-2 flex justify-between">
-                      <span>Available balance:</span> 
-                      <span className="text-text font-medium">{user.iTZSAmount.toLocaleString()} iTZS</span>
-                    </p>
-                  </div>
-                  
-                  {/* Quick Amounts */}
-                  <div className="mb-6">
-                    <p className="text-sm text-text-secondary mb-2">Quick Amounts</p>
-                    <div className="grid grid-cols-2 gap-2">
-                      {quickAmounts.map((quickAmount, index) => (
-                        <motion.button
-                          key={quickAmount}
-                          type="button"
-                          onClick={() => handleQuickAmount(quickAmount)}
-                          className="bg-background-hover hover:bg-primary/10 p-3 rounded-lg text-center transition-colors"
-                          whileHover={{ scale: 1.03 }}
-                          whileTap={{ scale: 0.97 }}
-                          variants={itemVariants}
-                          transition={{ delay: index * 0.05 }}
-                        >
-                          {quickAmount.toLocaleString()} iTZS
-                        </motion.button>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  {/* Memo Field */}
-                  <motion.div className="mb-6" variants={itemVariants}>
-                    <label htmlFor="memo" className="block text-sm text-text-secondary mb-2 flex items-center">
-                      <FiEdit3 className="mr-2 h-4 w-4" /> Memo (Optional)
-                    </label>
-                    <input
-                      type="text"
-                      id="memo"
-                      value={memo}
-                      onChange={(e) => setMemo(e.target.value)}
-                      placeholder="What's this payment for?"
-                      className="input"
-                    />
-                  </motion.div>
                   
                   {error && (
                     <motion.div 
@@ -449,11 +469,18 @@ const SendScreen = () => {
                     <motion.button
                       type="submit"
                       className="btn btn-primary flex-1"
-                      disabled={!amount || loading}
+                      disabled={loading}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
-                      Continue
+                      {loading ? (
+                        <div className="flex items-center justify-center">
+                          <FiRefreshCw className="animate-spin h-5 w-5 mr-2" />
+                          Finding...
+                        </div>
+                      ) : (
+                        'Continue'
+                      )}
                     </motion.button>
                   </div>
                 </form>
@@ -546,10 +573,72 @@ const SendScreen = () => {
             </motion.div>
           )}
           
-          {/* Step 4: Success */}
+          {/* Step 4: Processing (New Step) */}
           {step === 4 && (
             <motion.div 
               key="step4"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="h-full flex flex-col items-center justify-center text-center py-6"
+            >
+              <motion.h2 
+                className="text-xl font-bold mb-6 text-text"
+                variants={itemVariants}
+              >
+                Processing Your Payment
+              </motion.h2>
+              
+              {/* Progress bar */}
+              <motion.div 
+                className="w-full h-2 bg-background-hover rounded-full mb-8 overflow-hidden"
+                variants={itemVariants}
+              >
+                <motion.div 
+                  className="h-full bg-primary"
+                  initial={{ width: "0%" }}
+                  animate={{ width: `${processingProgress}%` }}
+                  transition={{ duration: 0.5 }}
+                />
+              </motion.div>
+              
+              {/* Processing steps */}
+              <motion.div 
+                className="w-full mb-8 card p-4"
+                variants={itemVariants}
+              >
+                {processingSteps.map((step, index) => (
+                  <div 
+                    key={step.id}
+                    className={`flex items-center py-2 ${index !== processingSteps.length - 1 ? 'border-b border-dark-700/20' : ''}`}
+                  >
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center mr-3 ${step.completed ? 'bg-success/20 text-success' : 'bg-background-hover text-text-secondary'}`}>
+                      {step.completed ? <FiCheck className="h-4 w-4" /> : index + 1}
+                    </div>
+                    <span className={step.completed ? 'text-text' : 'text-text-secondary'}>
+                      {step.text}
+                    </span>
+                    {step.completed && (
+                      <FiCheckCircle className="ml-auto text-success h-5 w-5" />
+                    )}
+                  </div>
+                ))}
+              </motion.div>
+              
+              <motion.p 
+                className="text-text-secondary text-sm"
+                variants={itemVariants}
+              >
+                Please wait while we process your transaction. This may take a few moments.
+              </motion.p>
+            </motion.div>
+          )}
+          
+          {/* Step 5: Success (Previously Step 4) */}
+          {step === 5 && (
+            <motion.div 
+              key="step5"
               variants={containerVariants}
               initial="hidden"
               animate="visible"
