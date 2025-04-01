@@ -140,7 +140,7 @@ p {
   }
   
   .btn-secondary {
-    @apply bg-background-card-hover text-text-secondary hover:bg-background-card-hover/80 active:bg-background-card-hover/70;
+    @apply bg-background-hover text-text-secondary hover:bg-background-hover/80 active:bg-background-hover/70;
   }
   
   .btn-outline {
