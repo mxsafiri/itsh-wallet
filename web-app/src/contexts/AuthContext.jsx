@@ -10,14 +10,25 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Debug function to log authentication state
+  const logAuthState = (message) => {
+    console.log(`[AUTH DEBUG] ${message}`, {
+      user,
+      isAuthenticated: !!user,
+      hasToken: !!localStorage.getItem('nedapay_token'),
+      timestamp: new Date().toISOString()
+    });
+  };
+
   useEffect(() => {
     // Check if user is already logged in
     const checkAuthStatus = async () => {
       setLoading(true);
+      console.log('[AUTH] Checking authentication status...');
       
       // Add a timeout to prevent indefinite loading
       const timeoutId = setTimeout(() => {
-        console.log('Auth check timed out - forcing completion');
+        console.log('[AUTH] Auth check timed out - forcing completion');
         setLoading(false);
       }, 5000); // 5 second timeout
       
@@ -25,8 +36,14 @@ export const AuthProvider = ({ children }) => {
         const storedUser = localStorage.getItem('nedapay_user');
         const token = localStorage.getItem('nedapay_token');
         
+        console.log('[AUTH] Local storage check:', { 
+          hasStoredUser: !!storedUser, 
+          hasToken: !!token 
+        });
+        
         if (storedUser && token) {
           const userData = JSON.parse(storedUser);
+          console.log('[AUTH] Found stored user:', userData);
           
           // Set auth header for API calls
           api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -37,33 +54,42 @@ export const AuthProvider = ({ children }) => {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 3000);
             
-            const response = await api.get(`/api/wallet/balance/${userData.id}`, {
+            console.log(`[AUTH] Verifying token by fetching balance for phone number: ${userData.phoneNumber}`);
+            const response = await api.get(`/api/wallet/balance/${userData.phoneNumber}`, {
               signal: controller.signal
             });
             
             clearTimeout(timeoutId);
             
+            console.log('[AUTH] Balance API response:', response.data);
+            
             if (response.data.success) {
+              console.log('[AUTH] Token verified successfully, setting user state');
               setUser(userData);
+              logAuthState('Authentication successful');
             } else {
+              console.log('[AUTH] Token verification failed, clearing storage');
               // Token expired or invalid, clear storage
               localStorage.removeItem('nedapay_user');
               localStorage.removeItem('nedapay_token');
               delete api.defaults.headers.common['Authorization'];
             }
           } catch (error) {
-            console.error('Error verifying auth token:', error);
+            console.error('[AUTH] Error verifying auth token:', error);
             // If there's an error, we'll clear the stored data to be safe
             localStorage.removeItem('nedapay_user');
             localStorage.removeItem('nedapay_token');
             delete api.defaults.headers.common['Authorization'];
           }
+        } else {
+          console.log('[AUTH] No stored user or token found');
         }
       } catch (error) {
-        console.error('Error checking auth status:', error);
+        console.error('[AUTH] Error checking auth status:', error);
       } finally {
         clearTimeout(timeoutId);
         setLoading(false);
+        console.log('[AUTH] Auth check completed, loading set to false');
       }
     };
     
@@ -74,21 +100,22 @@ export const AuthProvider = ({ children }) => {
   const login = async (phoneNumber, pin) => {
     setLoading(true);
     try {
-      console.log('Attempting login with:', { phoneNumber, pin });
+      console.log('[AUTH] Attempting login with:', { phoneNumber });
       
       const response = await api.post('/api/auth/login', {
         phoneNumber,
         pin
       });
 
-      console.log('Login response:', response.data);
+      console.log('[AUTH] Login response:', response.data);
 
       if (response.data.success) {
         const userData = {
-          id: response.data.user.id,
           phoneNumber: response.data.user.phoneNumber,
           stellarPublicKey: response.data.user.stellarPublicKey
         };
+
+        console.log('[AUTH] Login successful, storing user data:', userData);
 
         // Store user data and token
         localStorage.setItem('nedapay_user', JSON.stringify(userData));
@@ -99,8 +126,10 @@ export const AuthProvider = ({ children }) => {
         
         setUser(userData);
         setError(null);
+        logAuthState('Login successful');
         return { success: true };
       } else {
+        console.log('[AUTH] Login failed:', response.data.message);
         setError(response.data.message || 'Login failed');
         return { 
           success: false, 
@@ -108,7 +137,7 @@ export const AuthProvider = ({ children }) => {
         };
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('[AUTH] Login error:', error);
       const errorMessage = error.response?.data?.message || 'Network error. Please try again.';
       setError(errorMessage);
       return { 
@@ -124,21 +153,22 @@ export const AuthProvider = ({ children }) => {
   const register = async (phoneNumber, pin) => {
     setLoading(true);
     try {
-      console.log('Attempting registration with:', { phoneNumber, pin });
+      console.log('[AUTH] Attempting registration with:', { phoneNumber });
       
       const response = await api.post('/api/auth/register', {
         phoneNumber,
         pin
       });
 
-      console.log('Registration response:', response.data);
+      console.log('[AUTH] Registration response:', response.data);
 
       if (response.data.success) {
         const userData = {
-          id: response.data.user.id,
           phoneNumber: response.data.user.phoneNumber,
           stellarPublicKey: response.data.user.stellarPublicKey
         };
+
+        console.log('[AUTH] Registration successful, storing user data:', userData);
 
         // Store user data and token
         localStorage.setItem('nedapay_user', JSON.stringify(userData));
@@ -149,8 +179,10 @@ export const AuthProvider = ({ children }) => {
         
         setUser(userData);
         setError(null);
+        logAuthState('Registration successful');
         return { success: true };
       } else {
+        console.log('[AUTH] Registration failed:', response.data.message);
         setError(response.data.message || 'Registration failed');
         return { 
           success: false, 
@@ -158,7 +190,7 @@ export const AuthProvider = ({ children }) => {
         };
       }
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error('[AUTH] Registration error:', error);
       const errorMessage = error.response?.data?.message || 'Network error. Please try again.';
       setError(errorMessage);
       return { 
@@ -172,11 +204,13 @@ export const AuthProvider = ({ children }) => {
 
   // Logout function
   const logout = () => {
+    console.log('[AUTH] Logging out, clearing user data and token');
     localStorage.removeItem('nedapay_user');
     localStorage.removeItem('nedapay_token');
     delete api.defaults.headers.common['Authorization'];
     setUser(null);
     setError(null);
+    logAuthState('Logout completed');
   };
 
   return (

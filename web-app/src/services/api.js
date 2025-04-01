@@ -44,42 +44,57 @@ api.interceptors.response.use(
 // Wallet API
 export const walletAPI = {
   // Get user balance
-  getBalance: async (userId) => {
-    return api.get(`/api/wallet/balance/${userId}`);
+  getBalance: async (phoneNumber) => {
+    console.log(`[API] Getting balance for phone number: ${phoneNumber}`);
+    return api.get(`/wallet/balance/${phoneNumber}`);
   },
   
   // Generate QR code for receiving payments
-  generateQRCode: async (userId) => {
-    return api.get(`/api/wallet/qrcode/${userId}`);
+  generateQRCode: async (phoneNumber) => {
+    console.log(`[API] Generating QR code for phone number: ${phoneNumber}`);
+    return api.get(`/wallet/qrcode/${phoneNumber}`);
   },
   
   // Generate payment URI
-  generatePayment: async (amount, recipientId, memo = '') => {
-    return api.post('/api/wallet/generate-payment', {
+  generatePayment: async (amount, recipientPhone, memo = '') => {
+    console.log(`[API] Generating payment: ${amount} iTZS to ${recipientPhone}`);
+    return api.post('/wallet/generate-payment', {
       amount,
-      recipientId,
+      recipientPhone,
       memo
     });
   },
   
   // Get reserve statistics
   getReserveStats: async () => {
-    return api.get('/api/wallet/reserve');
+    console.log(`[API] Getting reserve stats`);
+    return api.get('/wallet/reserve-stats');
+  },
+  
+  // Deposit funds (for demo)
+  deposit: async (phoneNumber, amount) => {
+    console.log(`[API] Depositing ${amount} iTZS to ${phoneNumber}`);
+    return api.post('/wallet/deposit', {
+      phoneNumber,
+      amount
+    });
   }
 };
 
 // Transaction API
 export const transactionAPI = {
   // Get user transactions
-  getTransactions: async (userId) => {
-    return api.get(`/api/transactions/${userId}`);
+  getTransactions: async (phoneNumber) => {
+    console.log(`[API] Getting transactions for phone number: ${phoneNumber}`);
+    return api.get(`/transactions/${phoneNumber}`);
   },
   
   // Send payment
-  sendPayment: async (senderId, recipientId, amount, memo = '') => {
-    return api.post('/api/transactions/send', {
-      senderId,
-      recipientId,
+  sendPayment: async (senderPhone, recipientPhone, amount, memo = '') => {
+    console.log(`[API] Sending payment: ${amount} iTZS from ${senderPhone} to ${recipientPhone}`);
+    return api.post('/transactions/send', {
+      senderPhone,
+      recipientPhone,
       amount,
       memo
     });
@@ -87,7 +102,8 @@ export const transactionAPI = {
   
   // Log transaction (for web demo)
   logTransaction: async (transaction) => {
-    return api.post('/api/transactions/log', transaction);
+    console.log(`[API] Logging transaction`);
+    return api.post('/wallet/log-transaction', transaction);
   }
 };
 
@@ -95,7 +111,8 @@ export const transactionAPI = {
 export const userAPI = {
   // Find user by phone number
   findUserByPhone: async (phoneNumber) => {
-    return api.get(`/api/auth/user/${phoneNumber}`);
+    console.log(`[API] Finding user with phone number: ${phoneNumber}`);
+    return api.get(`/auth/user/${phoneNumber}`);
   }
 };
 

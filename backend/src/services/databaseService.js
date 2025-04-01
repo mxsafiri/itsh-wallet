@@ -19,6 +19,7 @@ function initializeDatabase() {
       pin TEXT,
       stellar_public_key TEXT,
       stellar_secret_key TEXT,
+      itzs_balance REAL DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
@@ -79,8 +80,8 @@ function createMockUsers() {
         const userId = require('uuid').v4();
         
         db.run(
-          'INSERT INTO users (id, phone_number, pin, stellar_public_key, stellar_secret_key) VALUES (?, ?, ?, ?, ?)',
-          [userId, user.phoneNumber, user.pin, mockPublicKey, encryptedSecretKey]
+          'INSERT INTO users (id, phone_number, pin, stellar_public_key, stellar_secret_key, itzs_balance) VALUES (?, ?, ?, ?, ?, ?)',
+          [userId, user.phoneNumber, user.pin, mockPublicKey, encryptedSecretKey, 1000]
         );
         
         console.log(`Created mock user: ${user.phoneNumber}`);
@@ -114,11 +115,90 @@ const userDb = {
       const { id, phoneNumber, pin, stellarPublicKey, stellarSecretKey } = userData;
       
       db.run(
-        'INSERT INTO users (id, phone_number, pin, stellar_public_key, stellar_secret_key) VALUES (?, ?, ?, ?, ?)',
-        [id, phoneNumber, pin, stellarPublicKey, stellarSecretKey],
+        'INSERT INTO users (id, phone_number, pin, stellar_public_key, stellar_secret_key, itzs_balance) VALUES (?, ?, ?, ?, ?, ?)',
+        [id, phoneNumber, pin, stellarPublicKey, stellarSecretKey, 0],
         function(err) {
           if (err) reject(err);
           resolve({ id, phoneNumber });
+        }
+      );
+    });
+  },
+  
+  // Get user by phone number (for compatibility with wallet routes)
+  getUserByPhone: (phoneNumber) => {
+    return new Promise((resolve, reject) => {
+      db.get('SELECT * FROM users WHERE phone_number = ?', [phoneNumber], (err, row) => {
+        if (err) {
+          console.error('[DB] Error getting user by phone:', err);
+          return reject(err);
+        }
+        
+        if (!row) {
+          console.log(`[DB] No user found with phone number: ${phoneNumber}`);
+          return resolve(null);
+        }
+        
+        // Transform to match the expected format
+        const user = {
+          id: row.id,
+          phoneNumber: row.phone_number,
+          pin: row.pin,
+          stellarPublicKey: row.stellar_public_key,
+          stellarSecretKey: row.stellar_secret_key,
+          iTZSAmount: row.itzs_balance || 0,
+          createdAt: row.created_at
+        };
+        
+        console.log(`[DB] Found user with phone number: ${phoneNumber}`);
+        resolve(user);
+      });
+    });
+  },
+  
+  // Update user balance
+  updateUserBalance: (phoneNumber, amount) => {
+    return new Promise((resolve, reject) => {
+      db.run(
+        'UPDATE users SET itzs_balance = itzs_balance + ? WHERE phone_number = ?',
+        [amount, phoneNumber],
+        function(err) {
+          if (err) {
+            console.error('[DB] Error updating user balance:', err);
+            return reject(err);
+          }
+          
+          if (this.changes === 0) {
+            console.log(`[DB] No user found with phone number: ${phoneNumber}`);
+            return resolve(false);
+          }
+          
+          console.log(`[DB] Updated balance for user ${phoneNumber} by ${amount}`);
+          resolve(true);
+        }
+      );
+    });
+  },
+  
+  // Get user balance
+  getUserBalance: (phoneNumber) => {
+    return new Promise((resolve, reject) => {
+      db.get(
+        'SELECT itzs_balance FROM users WHERE phone_number = ?',
+        [phoneNumber],
+        (err, row) => {
+          if (err) {
+            console.error('[DB] Error getting user balance:', err);
+            return reject(err);
+          }
+          
+          if (!row) {
+            console.log(`[DB] No user found with phone number: ${phoneNumber}`);
+            return resolve(0);
+          }
+          
+          console.log(`[DB] Retrieved balance for user ${phoneNumber}: ${row.itzs_balance}`);
+          resolve(row.itzs_balance || 0);
         }
       );
     });
@@ -182,6 +262,24 @@ const transactionDb = {
         }
       );
     });
+  },
+  
+  // Get transactions by phone number
+  getTransactionsByPhone: (phoneNumber, limit = 10) => {
+    return new Promise((resolve, reject) => {
+      // First get the user ID from the phone number
+      userDb.getUserByPhone(phoneNumber)
+        .then(user => {
+          if (!user) {
+            return resolve([]);
+          }
+          
+          // Then get transactions using the user ID
+          return transactionDb.getUserTransactions(user.id, limit);
+        })
+        .then(transactions => resolve(transactions))
+        .catch(err => reject(err));
+    });
   }
 };
 
@@ -200,14 +298,14 @@ const reserveDb = {
     return new Promise((resolve, reject) => {
       db.run(
         `UPDATE reserve_stats 
-        SET total_minted = total_minted + ?,
-            total_burned = total_burned + ?,
-            last_updated = CURRENT_TIMESTAMP
-        WHERE id = (SELECT id FROM reserve_stats ORDER BY id DESC LIMIT 1)`,
+         SET total_minted = total_minted + ?, 
+             total_burned = total_burned + ?,
+             last_updated = CURRENT_TIMESTAMP
+         WHERE id = (SELECT id FROM reserve_stats ORDER BY id DESC LIMIT 1)`,
         [minted, burned],
         function(err) {
           if (err) reject(err);
-          resolve({ success: true });
+          resolve({ minted, burned });
         }
       );
     });
@@ -219,5 +317,10 @@ module.exports = {
   initializeDatabase,
   userDb,
   transactionDb,
-  reserveDb
+  reserveDb,
+  // Add direct methods for wallet routes
+  getUserByPhone: userDb.getUserByPhone,
+  updateUserBalance: userDb.updateUserBalance,
+  getUserBalance: userDb.getUserBalance,
+  getTransactionsByPhone: transactionDb.getTransactionsByPhone
 };

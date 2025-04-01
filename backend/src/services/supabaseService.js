@@ -122,6 +122,8 @@ class SupabaseService {
    * @returns {Promise<Object>} The user object
    */
   async getUserByPhone(phoneNumber) {
+    console.log(`[SUPABASE] Getting user with phone number: ${phoneNumber}`);
+    
     // Using admin client for backend operations
     const { data, error } = await supabaseAdmin
       .from('users')
@@ -130,14 +132,17 @@ class SupabaseService {
       .single();
 
     if (error) {
-      console.error('Error fetching user by phone:', error.message);
+      console.error('[SUPABASE] Error fetching user by phone:', error.message);
       return null;
     }
 
     if (!data) {
+      console.log(`[SUPABASE] No user found with phone number: ${phoneNumber}`);
       return null;
     }
 
+    console.log(`[SUPABASE] Found user with phone: ${phoneNumber}`);
+    
     return {
       id: data.phone, // Use phone as ID since there's no id column
       phoneNumber: data.phone,
@@ -182,6 +187,69 @@ class SupabaseService {
   }
 
   /**
+   * Update user balance
+   * @param {string} phoneNumber - The user's phone number
+   * @param {number} amount - The amount to add to the balance (can be negative)
+   * @returns {Promise<boolean>} Success status
+   */
+  async updateUserBalance(phoneNumber, amount) {
+    console.log(`[SUPABASE] Updating balance for ${phoneNumber} by ${amount}`);
+    
+    try {
+      // First get the current balance
+      const user = await this.getUserByPhone(phoneNumber);
+      
+      if (!user) {
+        console.log(`[SUPABASE] No user found with phone number: ${phoneNumber}`);
+        return false;
+      }
+      
+      const newBalance = (user.iTZSAmount || 0) + amount;
+      
+      // Update the balance
+      const { error } = await supabaseAdmin
+        .from('users')
+        .update({ iTZS_amount: newBalance })
+        .eq('phone', phoneNumber);
+      
+      if (error) {
+        console.error('[SUPABASE] Error updating user balance:', error.message);
+        return false;
+      }
+      
+      console.log(`[SUPABASE] Successfully updated balance for ${phoneNumber} to ${newBalance}`);
+      return true;
+    } catch (error) {
+      console.error('[SUPABASE] Error in updateUserBalance:', error);
+      return false;
+    }
+  }
+  
+  /**
+   * Get user balance
+   * @param {string} phoneNumber - The user's phone number
+   * @returns {Promise<number>} The user's balance
+   */
+  async getUserBalance(phoneNumber) {
+    console.log(`[SUPABASE] Getting balance for ${phoneNumber}`);
+    
+    try {
+      const user = await this.getUserByPhone(phoneNumber);
+      
+      if (!user) {
+        console.log(`[SUPABASE] No user found with phone number: ${phoneNumber}`);
+        return 0;
+      }
+      
+      console.log(`[SUPABASE] Retrieved balance for ${phoneNumber}: ${user.iTZSAmount}`);
+      return user.iTZSAmount || 0;
+    } catch (error) {
+      console.error('[SUPABASE] Error in getUserBalance:', error);
+      return 0;
+    }
+  }
+
+  /**
    * Save a transaction to the database
    * @param {Object} transaction - The transaction details
    * @returns {Promise<Object>} The saved transaction
@@ -213,73 +281,168 @@ class SupabaseService {
   /**
    * Get transactions for a user
    * @param {string} phoneNumber - The user's phone number
-   * @returns {Promise<Array>} The user's transactions
+   * @param {number} limit - Maximum number of transactions to return
+   * @returns {Promise<Array>} List of transactions
    */
-  async getUserTransactions(phoneNumber) {
-    // Using admin client for backend operations
-    const { data, error } = await supabaseAdmin
-      .from('transactions')
-      .select('*')
-      .or(`sender_phone.eq.${phoneNumber},recipient_phone.eq.${phoneNumber}`)
-      .order('timestamp', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching user transactions:', error.message);
+  async getTransactionsByPhone(phoneNumber, limit = 10) {
+    console.log(`[SUPABASE] Getting transactions for ${phoneNumber}`);
+    
+    try {
+      // Get transactions where user is sender or recipient
+      const { data, error } = await supabaseAdmin
+        .from('transactions')
+        .select('*')
+        .or(`sender_phone.eq.${phoneNumber},recipient_phone.eq.${phoneNumber}`)
+        .order('timestamp', { ascending: false })
+        .limit(limit);
+      
+      if (error) {
+        console.error('[SUPABASE] Error fetching transactions:', error.message);
+        return [];
+      }
+      
+      console.log(`[SUPABASE] Found ${data.length} transactions for ${phoneNumber}`);
+      return data || [];
+    } catch (error) {
+      console.error('[SUPABASE] Error in getTransactionsByPhone:', error);
       return [];
     }
-
-    return data.map(tx => ({
-      id: tx.id,
-      senderPhone: tx.sender_phone,
-      recipientPhone: tx.recipient_phone,
-      amount: tx.amount,
-      memo: tx.memo,
-      transactionHash: tx.transaction_hash,
-      status: tx.status,
-      timestamp: tx.timestamp,
-      type: tx.sender_phone === phoneNumber ? 'send' : 'receive'
-    }));
   }
 
   /**
-   * Update user's iTZS balance
-   * @param {string} phoneNumber - The user's phone number
-   * @param {number} amount - The amount to add (positive) or subtract (negative)
+   * Get reserve statistics
+   * @returns {Promise<Object>} Reserve statistics
+   */
+  async getReserveStats() {
+    // For MVP, return mock data
+    // In a real app, this would query the Supabase database
+    return {
+      totalMinted: 1000000,
+      totalBurned: 0,
+      totalCirculating: 1000000,
+      lastUpdated: new Date().toISOString()
+    };
+  }
+
+  /**
+   * Get wallet balance
+   * @param {string} walletAddress - The wallet address
+   * @returns {Promise<number>} The wallet balance
+   */
+  async getWalletBalance(walletAddress) {
+    console.log(`[SUPABASE] Getting wallet balance for ${walletAddress}`);
+    
+    try {
+      const { data, error } = await supabaseAdmin
+        .from('wallets')
+        .select('balance')
+        .eq('address', walletAddress)
+        .single();
+      
+      if (error) {
+        console.error('[SUPABASE] Error fetching wallet balance:', error.message);
+        return 0;
+      }
+      
+      console.log(`[SUPABASE] Retrieved wallet balance for ${walletAddress}: ${data.balance}`);
+      return data.balance || 0;
+    } catch (error) {
+      console.error('[SUPABASE] Error in getWalletBalance:', error);
+      return 0;
+    }
+  }
+
+  /**
+   * Update wallet balance
+   * @param {string} walletAddress - The wallet address
+   * @param {number} amount - The amount to add to the balance (can be negative)
    * @returns {Promise<boolean>} Success status
    */
-  async updateUserBalance(phoneNumber, amount) {
-    // Get current balance
-    const user = await this.getUserByPhone(phoneNumber);
+  async updateWalletBalance(walletAddress, amount) {
+    console.log(`[SUPABASE] Updating wallet balance for ${walletAddress} by ${amount}`);
     
-    if (!user) {
-      console.error(`User not found: ${phoneNumber}`);
+    try {
+      // First get the current balance
+      const currentBalance = await this.getWalletBalance(walletAddress);
+      
+      const newBalance = currentBalance + amount;
+      
+      // Update the balance
+      const { error } = await supabaseAdmin
+        .from('wallets')
+        .update({ balance: newBalance })
+        .eq('address', walletAddress);
+      
+      if (error) {
+        console.error('[SUPABASE] Error updating wallet balance:', error.message);
+        return false;
+      }
+      
+      console.log(`[SUPABASE] Successfully updated wallet balance for ${walletAddress} to ${newBalance}`);
+      return true;
+    } catch (error) {
+      console.error('[SUPABASE] Error in updateWalletBalance:', error);
       return false;
     }
-    
-    const newBalance = (user.iTZSAmount || 0) + amount;
-    
-    // Update balance
-    const { error } = await supabaseAdmin
-      .from('users')
-      .update({ iTZS_amount: newBalance })
-      .eq('phone', phoneNumber);
-    
-    if (error) {
-      console.error('Error updating user balance:', error.message);
-      return false;
-    }
-    
-    return true;
   }
 
   /**
-   * Get user's iTZS balance
-   * @param {string} phoneNumber - The user's phone number
-   * @returns {Promise<number>} The user's balance
+   * Save a wallet transaction to the database
+   * @param {Object} transaction - The transaction details
+   * @returns {Promise<Object>} The saved transaction
    */
-  async getUserBalance(phoneNumber) {
-    const user = await this.getUserByPhone(phoneNumber);
-    return user ? user.iTZSAmount || 0 : 0;
+  async saveWalletTransaction(transaction) {
+    // Using admin client for backend operations
+    const { data, error } = await supabaseAdmin
+      .from('wallet_transactions')
+      .insert([{
+        wallet_address: transaction.walletAddress,
+        amount: transaction.amount,
+        memo: transaction.memo || '',
+        transaction_hash: transaction.transactionHash || '',
+        status: transaction.status || 'completed',
+        timestamp: new Date().toISOString()
+      }])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error saving wallet transaction:', error.message);
+      return null;
+    }
+
+    return data;
+  }
+
+  /**
+   * Get wallet transactions for a wallet
+   * @param {string} walletAddress - The wallet address
+   * @param {number} limit - Maximum number of transactions to return
+   * @returns {Promise<Array>} List of transactions
+   */
+  async getWalletTransactionsByAddress(walletAddress, limit = 10) {
+    console.log(`[SUPABASE] Getting wallet transactions for ${walletAddress}`);
+    
+    try {
+      // Get transactions where wallet is sender or recipient
+      const { data, error } = await supabaseAdmin
+        .from('wallet_transactions')
+        .select('*')
+        .eq('wallet_address', walletAddress)
+        .order('timestamp', { ascending: false })
+        .limit(limit);
+      
+      if (error) {
+        console.error('[SUPABASE] Error fetching wallet transactions:', error.message);
+        return [];
+      }
+      
+      console.log(`[SUPABASE] Found ${data.length} wallet transactions for ${walletAddress}`);
+      return data || [];
+    } catch (error) {
+      console.error('[SUPABASE] Error in getWalletTransactionsByAddress:', error);
+      return [];
+    }
   }
 }
 

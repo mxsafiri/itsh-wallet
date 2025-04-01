@@ -5,29 +5,49 @@ const { getUserBalance, getReserveStats } = require('../services/stellarService'
 const QRCode = require('qrcode');
 const StellarSdk = require('stellar-sdk');
 const supabaseService = require('../services/supabaseService');
+const databaseService = require('../services/databaseService');
+
+// Helper function to get the appropriate database service
+const getDbService = () => {
+  return process.env.NODE_ENV === 'production' ? supabaseService : databaseService;
+};
 
 /**
- * @route   GET /api/wallet/balance/:userId
+ * @route   GET /api/wallet/balance/:phoneNumber
  * @desc    Get user's iTZS balance
  * @access  Private
  */
-router.get('/balance/:userId', async (req, res) => {
+router.get('/balance/:phoneNumber', async (req, res) => {
   try {
-    const { userId } = req.params;
+    const { phoneNumber } = req.params;
+    console.log(`[WALLET] Getting balance for phone number: ${phoneNumber}`);
     
-    // Find user by ID
-    const user = await userDb.findById(userId);
+    // Find user by phone number
+    const dbService = getDbService();
+    const user = await dbService.getUserByPhone(phoneNumber);
     
     if (!user) {
+      console.log(`[WALLET] User not found with phone number: ${phoneNumber}`);
       return res.status(404).json({ 
         success: false, 
         message: 'User not found' 
       });
     }
     
-    // For the MVP, we'll use mock balances
-    // In production, we would fetch the actual balance from Stellar
-    const balance = await getUserBalance(user.stellar_public_key);
+    console.log(`[WALLET] Found user:`, user);
+    
+    // Get balance from database
+    let balance = 0;
+    
+    if (process.env.NODE_ENV === 'production') {
+      // In production, get balance from Supabase
+      balance = user.iTZSAmount || 0;
+    } else {
+      // For development, use mock balance or fetch from Stellar
+      balance = await getUserBalance(user.stellarPublicKey);
+    }
+    
+    console.log(`[WALLET] User balance: ${balance} iTZS`);
     
     res.json({
       success: true,
@@ -35,7 +55,7 @@ router.get('/balance/:userId', async (req, res) => {
       assetCode: 'iTZS'
     });
   } catch (error) {
-    console.error('Error fetching balance:', error);
+    console.error('[WALLET] Error fetching balance:', error);
     res.status(500).json({ 
       success: false, 
       message: 'Server error while fetching balance' 
@@ -44,18 +64,21 @@ router.get('/balance/:userId', async (req, res) => {
 });
 
 /**
- * @route   GET /api/wallet/qrcode/:userId
+ * @route   GET /api/wallet/qrcode/:phoneNumber
  * @desc    Generate QR code for receiving payments
  * @access  Private
  */
-router.get('/qrcode/:userId', async (req, res) => {
+router.get('/qrcode/:phoneNumber', async (req, res) => {
   try {
-    const { userId } = req.params;
+    const { phoneNumber } = req.params;
+    console.log(`[WALLET] Generating QR code for phone number: ${phoneNumber}`);
     
-    // Find user by ID
-    const user = await userDb.findById(userId);
+    // Find user by phone number
+    const dbService = getDbService();
+    const user = await dbService.getUserByPhone(phoneNumber);
     
     if (!user) {
+      console.log(`[WALLET] User not found with phone number: ${phoneNumber}`);
       return res.status(404).json({ 
         success: false, 
         message: 'User not found' 
@@ -65,8 +88,8 @@ router.get('/qrcode/:userId', async (req, res) => {
     // Create QR code data with phone number
     // In a real app, you might include more information or use a custom format
     const qrData = JSON.stringify({
-      phoneNumber: user.phone_number,
-      stellarPublicKey: user.stellar_public_key
+      phoneNumber: user.phoneNumber,
+      stellarPublicKey: user.stellarPublicKey
     });
     
     // Generate QR code as base64 data URL
@@ -75,10 +98,10 @@ router.get('/qrcode/:userId', async (req, res) => {
     res.json({
       success: true,
       qrCode: qrCodeDataUrl,
-      phoneNumber: user.phone_number
+      phoneNumber: user.phoneNumber
     });
   } catch (error) {
-    console.error('Error generating QR code:', error);
+    console.error('[WALLET] Error generating QR code:', error);
     res.status(500).json({ 
       success: false, 
       message: 'Server error while generating QR code' 
@@ -93,17 +116,18 @@ router.get('/qrcode/:userId', async (req, res) => {
  */
 router.post('/deposit', async (req, res) => {
   try {
-    const { userId, amount } = req.body;
+    const { phoneNumber, amount } = req.body;
     
-    if (!userId || !amount) {
+    if (!phoneNumber || !amount) {
       return res.status(400).json({ 
         success: false, 
-        message: 'User ID and amount are required' 
+        message: 'Phone number and amount are required' 
       });
     }
     
-    // Find user by ID
-    const user = await userDb.findById(userId);
+    // Find user by phone number
+    const dbService = getDbService();
+    const user = await dbService.getUserByPhone(phoneNumber);
     
     if (!user) {
       return res.status(404).json({ 
@@ -112,68 +136,76 @@ router.post('/deposit', async (req, res) => {
       });
     }
     
-    // In a real app, we would process a real deposit
-    // For the MVP, we'll just simulate a successful deposit
+    // Update user's balance
+    const success = await dbService.updateUserBalance(phoneNumber, parseFloat(amount));
+    
+    if (!success) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Failed to update balance' 
+      });
+    }
+    
+    // Get updated balance
+    const updatedBalance = await dbService.getUserBalance(phoneNumber);
     
     res.json({
       success: true,
       message: `Successfully deposited ${amount} iTZS`,
-      amount
+      balance: updatedBalance
     });
   } catch (error) {
-    console.error('Error processing deposit:', error);
+    console.error('[WALLET] Error processing deposit:', error);
     res.status(500).json({ 
       success: false, 
-      message: 'Server error while processing deposit' 
+      message: 'Server error during deposit' 
     });
   }
 });
 
 /**
- * @route   GET /api/wallet/reserve
+ * @route   GET /api/wallet/reserve-stats
  * @desc    Get reserve statistics
  * @access  Public
  */
-router.get('/reserve', async (req, res) => {
+router.get('/reserve-stats', async (req, res) => {
   try {
-    const reserveStats = await getReserveStats();
+    // For the MVP, we'll use mock data
+    // In production, we would fetch actual data from Stellar
+    const stats = await getReserveStats();
     
     res.json({
       success: true,
-      reserve: reserveStats
+      stats
     });
   } catch (error) {
-    console.error('Error fetching reserve stats:', error);
+    console.error('[WALLET] Error fetching reserve stats:', error);
     res.status(500).json({ 
       success: false, 
-      message: 'Server error while fetching reserve statistics' 
+      message: 'Server error while fetching reserve stats' 
     });
   }
 });
 
 /**
  * @route   POST /api/wallet/generate-payment
- * @desc    Generate a SEP-0007 payment URI for Stellar wallets
+ * @desc    Generate a payment URI for Stellar SEP-0007
  * @access  Private
  */
 router.post('/generate-payment', async (req, res) => {
   try {
-    const { amount, memo, senderId, recipientId } = req.body;
+    const { amount, memo, senderPhone, recipientPhone } = req.body;
     
-    if (!amount || !recipientId) {
+    if (!amount || !recipientPhone) {
       return res.status(400).json({ 
         success: false, 
-        message: 'Amount and recipient ID are required' 
+        message: 'Amount and recipient phone number are required' 
       });
     }
     
-    // Get recipient user
-    let recipient;
-    if (process.env.NODE_ENV === 'production' || process.env.SUPABASE_URL) {
-      recipient = await supabaseService.getUserById(recipientId);
-    } else {
-      recipient = await userDb.findById(recipientId);
-    }
+    // Find recipient by phone number
+    const dbService = getDbService();
+    const recipient = await dbService.getUserByPhone(recipientPhone);
     
     if (!recipient) {
       return res.status(404).json({ 
@@ -182,53 +214,33 @@ router.post('/generate-payment', async (req, res) => {
       });
     }
     
-    // Create a SEP-0007 compliant URI
-    // Format: web+stellar:pay?destination=DESTINATION&amount=AMOUNT&memo=MEMO
-    const stellarUri = new URL('web+stellar:pay');
+    // Create a payment URI using SEP-0007
+    // https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md
+    const server = new StellarSdk.Server('https://horizon-testnet.stellar.org');
+    const asset = new StellarSdk.Asset('iTZS', process.env.ISSUER_PUBLIC_KEY);
     
-    // Add destination (recipient's Stellar public key)
-    stellarUri.searchParams.append('destination', recipient.stellar_public_key || recipient.stellarPublicKey);
+    // Build the URI
+    const uri = new URL('web+stellar:pay');
+    uri.searchParams.append('destination', recipient.stellarPublicKey);
+    uri.searchParams.append('amount', amount);
+    uri.searchParams.append('asset_code', 'iTZS');
+    uri.searchParams.append('asset_issuer', process.env.ISSUER_PUBLIC_KEY);
     
-    // Add amount and asset code
-    stellarUri.searchParams.append('amount', amount);
-    stellarUri.searchParams.append('asset_code', process.env.ASSET_CODE || 'iTZS');
-    
-    // Add asset issuer if available
-    if (process.env.ASSET_ISSUER) {
-      stellarUri.searchParams.append('asset_issuer', process.env.ASSET_ISSUER);
-    }
-    
-    // Add memo if provided
     if (memo) {
-      stellarUri.searchParams.append('memo', memo);
-    }
-    
-    // Add transaction ID for tracking
-    const transactionId = `${Date.now()}-${senderId}-${recipientId}`;
-    stellarUri.searchParams.append('callback', `${req.protocol}://${req.get('host')}/api/wallet/log-transaction/${transactionId}`);
-    
-    // Create a pending transaction record
-    if (process.env.NODE_ENV === 'production' || process.env.SUPABASE_URL) {
-      await supabaseService.saveTransaction({
-        senderId,
-        recipientId,
-        amount,
-        type: 'payment',
-        status: 'pending',
-        stellarTransactionId: transactionId
-      });
-    } else {
-      // Use your local database service
-      // This depends on your implementation
+      uri.searchParams.append('memo', memo);
+      uri.searchParams.append('memo_type', 'text');
     }
     
     res.json({
       success: true,
-      paymentUri: stellarUri.toString(),
-      transactionId
+      paymentUri: uri.toString(),
+      recipient: {
+        phoneNumber: recipient.phoneNumber,
+        stellarPublicKey: recipient.stellarPublicKey
+      }
     });
   } catch (error) {
-    console.error('Error generating payment URI:', error);
+    console.error('[WALLET] Error generating payment URI:', error);
     res.status(500).json({ 
       success: false, 
       message: 'Server error while generating payment URI' 
@@ -280,7 +292,7 @@ router.get('/log-transaction/:transactionId', async (req, res) => {
       message: 'Transaction logged successfully'
     });
   } catch (error) {
-    console.error('Error logging transaction:', error);
+    console.error('[WALLET] Error logging transaction:', error);
     res.status(500).json({ 
       success: false, 
       message: 'Server error while logging transaction' 
