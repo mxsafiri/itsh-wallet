@@ -21,6 +21,37 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
+    // BYPASS AUTHENTICATION FOR DEVELOPMENT
+    const bypassAuth = async () => {
+      console.log('[AUTH] DEVELOPMENT MODE: Bypassing authentication checks');
+      
+      // Create a mock user
+      const mockUser = {
+        phoneNumber: '+255123456789',
+        stellarPublicKey: 'MOCK_PUBLIC_KEY_255123456789',
+        iTZSAmount: 50000
+      };
+      
+      // Store mock user data
+      localStorage.setItem('nedapay_user', JSON.stringify(mockUser));
+      localStorage.setItem('nedapay_token', 'mock-jwt-token-for-development');
+      
+      // Set auth header for API calls
+      api.defaults.headers.common['Authorization'] = 'Bearer mock-jwt-token-for-development';
+      
+      // Set user state
+      setUser(mockUser);
+      setLoading(false);
+      
+      console.log('[AUTH] Mock user automatically logged in:', mockUser);
+      logAuthState('Development mode: Auto-login successful');
+    };
+    
+    // Call the bypass function
+    bypassAuth();
+    
+    // Original authentication check code (commented out for now)
+    /*
     // Check if user is already logged in
     const checkAuthStatus = async () => {
       setLoading(true);
@@ -94,12 +125,39 @@ export const AuthProvider = ({ children }) => {
     };
     
     checkAuthStatus();
+    */
   }, []);
 
   // Login function
   const login = async (phoneNumber, pin) => {
     setLoading(true);
     try {
+      console.log('[AUTH] DEVELOPMENT MODE: Auto-login with:', { phoneNumber });
+      
+      // Create a mock user response
+      const mockUser = {
+        phoneNumber: phoneNumber,
+        stellarPublicKey: `MOCK_PUBLIC_KEY_${phoneNumber.replace('+', '')}`,
+        iTZSAmount: 50000
+      };
+      
+      // Store mock user data
+      localStorage.setItem('nedapay_user', JSON.stringify(mockUser));
+      localStorage.setItem('nedapay_token', 'mock-jwt-token-for-development');
+      
+      // Set auth header for API calls
+      api.defaults.headers.common['Authorization'] = 'Bearer mock-jwt-token-for-development';
+      
+      // Set user state
+      setUser(mockUser);
+      setError(null);
+      
+      console.log('[AUTH] Development mode: Login successful with mock user');
+      logAuthState('Development mode: Login successful');
+      
+      return { success: true };
+      
+      /*
       console.log('[AUTH] Attempting login with:', { phoneNumber });
       
       const response = await api.post('/api/auth/login', {
@@ -136,6 +194,7 @@ export const AuthProvider = ({ children }) => {
           message: response.data.message || 'Login failed' 
         };
       }
+      */
     } catch (error) {
       console.error('[AUTH] Login error:', error);
       const errorMessage = error.response?.data?.message || 'Network error. Please try again.';
@@ -153,6 +212,32 @@ export const AuthProvider = ({ children }) => {
   const register = async (phoneNumber, pin) => {
     setLoading(true);
     try {
+      console.log('[AUTH] DEVELOPMENT MODE: Auto-register with:', { phoneNumber });
+      
+      // Create a mock user
+      const mockUser = {
+        phoneNumber: phoneNumber,
+        stellarPublicKey: `MOCK_PUBLIC_KEY_${phoneNumber.replace('+', '')}`,
+        iTZSAmount: 50000
+      };
+      
+      // Store mock user data
+      localStorage.setItem('nedapay_user', JSON.stringify(mockUser));
+      localStorage.setItem('nedapay_token', 'mock-jwt-token-for-development');
+      
+      // Set auth header for API calls
+      api.defaults.headers.common['Authorization'] = 'Bearer mock-jwt-token-for-development';
+      
+      // Set user state
+      setUser(mockUser);
+      setError(null);
+      
+      console.log('[AUTH] Development mode: Registration successful with mock user');
+      logAuthState('Development mode: Registration successful');
+      
+      return { success: true };
+      
+      /*
       console.log('[AUTH] Attempting registration with:', { phoneNumber });
       
       const response = await api.post('/api/auth/register', {
@@ -189,6 +274,7 @@ export const AuthProvider = ({ children }) => {
           message: response.data.message || 'Registration failed' 
         };
       }
+      */
     } catch (error) {
       console.error('[AUTH] Registration error:', error);
       const errorMessage = error.response?.data?.message || 'Network error. Please try again.';
