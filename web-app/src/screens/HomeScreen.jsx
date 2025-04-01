@@ -295,6 +295,8 @@ const HomeScreen = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="bg-blue-500/20 p-2 rounded-xl mr-3"
+                onClick={() => navigate('/settings')}
+                style={{ cursor: 'pointer' }}
               >
                 <FiCreditCard className="text-blue-400 h-6 w-6" />
               </motion.div>
