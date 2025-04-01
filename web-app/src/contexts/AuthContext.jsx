@@ -74,10 +74,10 @@ export const AuthProvider = ({ children }) => {
   const login = async (phoneNumber, pin) => {
     setLoading(true);
     try {
-      console.log('Attempting login with:', { phone: phoneNumber, pin });
+      console.log('Attempting login with:', { phoneNumber, pin });
       
       const response = await api.post('/api/auth/login', {
-        phone: phoneNumber,
+        phoneNumber,
         pin
       });
 
@@ -124,10 +124,10 @@ export const AuthProvider = ({ children }) => {
   const register = async (phoneNumber, pin) => {
     setLoading(true);
     try {
-      console.log('Attempting registration with:', { phone: phoneNumber, pin });
+      console.log('Attempting registration with:', { phoneNumber, pin });
       
       const response = await api.post('/api/auth/register', {
-        phone: phoneNumber,
+        phoneNumber,
         pin
       });
 
