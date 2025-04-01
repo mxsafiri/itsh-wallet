@@ -1,0 +1,8 @@
+<svg width="200" height="80" viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="80" rx="8" fill="white"/>
+  <rect x="10" y="10" width="120" height="60" rx="4" fill="#00a86b"/>
+  <rect x="130" y="10" width="60" height="60" rx="4" fill="#333333"/>
+  <text x="20" y="50" font-family="Arial, sans-serif" font-weight="bold" font-size="24" fill="white">NEDA</text>
+  <text x="140" y="50" font-family="Arial, sans-serif" font-weight="bold" font-size="24" fill="white">PAY</text>
+  <text x="20" y="70" font-family="Arial, sans-serif" font-size="10" fill="#333333">Tanzania's Digital Payment Solution</text>
+</svg>
