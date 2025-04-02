@@ -14,7 +14,6 @@ import {
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
 } from 'recharts';
-import Logo from '../components/Logo';
 
 const HomeScreen = () => {
   const { user, logout } = useAuth();
@@ -293,7 +292,9 @@ const HomeScreen = () => {
           {/* NEDApay Logo and Demo Wallet Indicator */}
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center">
-              <Logo className="h-8 w-8 mr-3" />
+              <div className="bg-[#1E2235] p-3 rounded-xl mr-3 flex items-center justify-center">
+                <FiCreditCard className="text-blue-500 h-6 w-6" />
+              </div>
               <div>
                 <h1 className="text-2xl font-bold text-white">NEDApay</h1>
                 <div className="bg-blue-800/70 text-blue-200 text-xs font-medium px-3 py-1 rounded-full mt-1 inline-block">
