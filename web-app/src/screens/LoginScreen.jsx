@@ -6,7 +6,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useAuth } from '../contexts/AuthContext';
 import { formatPhoneNumber, formatPhoneForApi } from '../utils/formatters';
-import logo from '../assets/logo.svg';
+import Logo from '../components/Logo';
 
 const LoginScreen = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -187,24 +187,7 @@ const LoginScreen = () => {
               className="flex justify-center mb-8"
               variants={logoVariants}
             >
-              <div className="relative">
-                <motion.div 
-                  className="absolute inset-0 bg-blue-500/20 rounded-full filter blur-md"
-                  animate={{ 
-                    scale: [1, 1.2, 1],
-                  }}
-                  transition={{ 
-                    duration: 3,
-                    repeat: Infinity,
-                    repeatType: "reverse"
-                  }}
-                />
-                <img 
-                  src={logo} 
-                  alt="NEDApay Logo" 
-                  className="h-20 relative z-10"
-                />
-              </div>
+              <Logo size="large" />
             </motion.div>
             
             <motion.h2 
