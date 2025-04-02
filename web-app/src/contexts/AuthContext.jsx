@@ -317,6 +317,49 @@ export const AuthProvider = ({ children }) => {
     logAuthState('Logout completed');
   };
 
+  // Update user profile function
+  const updateUserProfile = async (profileData) => {
+    setLoading(true);
+    try {
+      console.log('[AUTH] DEVELOPMENT MODE: Updating user profile with:', profileData);
+      
+      // In a real app, this would call an API endpoint
+      // const response = await api.put('/api/user/profile', profileData);
+      
+      // For development, we'll update the mock user data in localStorage
+      const storedUser = localStorage.getItem('nedapay_user');
+      if (storedUser) {
+        const userData = JSON.parse(storedUser);
+        const updatedUser = { ...userData, ...profileData };
+        
+        // Store updated user data
+        localStorage.setItem('nedapay_user', JSON.stringify(updatedUser));
+        
+        // Update user state
+        setUser(updatedUser);
+        console.log('[AUTH] Development mode: Profile updated successfully', updatedUser);
+        
+        return { success: true };
+      } else {
+        console.error('[AUTH] No stored user found to update');
+        return { 
+          success: false, 
+          message: 'No user found to update' 
+        };
+      }
+    } catch (error) {
+      console.error('[AUTH] Profile update error:', error);
+      const errorMessage = error.response?.data?.message || 'Network error. Please try again.';
+      setError(errorMessage);
+      return { 
+        success: false, 
+        message: errorMessage
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -326,6 +369,7 @@ export const AuthProvider = ({ children }) => {
         login,
         register,
         logout,
+        updateUserProfile,
         isAuthenticated: !!user
       }}
     >

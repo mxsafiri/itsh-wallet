@@ -18,6 +18,7 @@ import ScanScreen from './screens/ScanScreen';
 import TransactionHistoryScreen from './screens/TransactionHistoryScreen';
 import SecurityScreen from './screens/SecurityScreen';
 import SettingsScreen from './screens/SettingsScreen';
+import EditProfileScreen from './screens/EditProfileScreen';
 import LearnScreen from './screens/LearnScreen';
 import ServicePaymentScreen from './screens/ServicePaymentScreen';
 import AboutScreen from './screens/AboutScreen';
@@ -223,6 +224,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <SettingsScreen />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/profile" 
+                  element={
+                    <ProtectedRoute>
+                      <EditProfileScreen />
                     </ProtectedRoute>
                   } 
                 />
