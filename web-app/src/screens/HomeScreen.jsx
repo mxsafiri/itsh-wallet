@@ -160,8 +160,8 @@ const HomeScreen = () => {
       description: "Zero costs on all your payments",
       descriptionSwahili: "Hakuna gharama zozote zilizofichwa",
       icon: <FiShield className="h-8 w-8" />,
-      color: "from-blue-500/90 to-blue-600/90",
-      textColor: "text-blue-100",
+      color: "from-green-500/90 to-green-600/90",
+      textColor: "text-green-100",
       learnPath: "no-fees"
     },
     {
@@ -171,8 +171,8 @@ const HomeScreen = () => {
       description: "Advanced security for your money",
       descriptionSwahili: "Usalama wa hali ya juu",
       icon: <FiLock className="h-8 w-8" />,
-      color: "from-blue-500/90 to-blue-600/90",
-      textColor: "text-blue-100",
+      color: "from-purple-500/90 to-purple-600/90",
+      textColor: "text-purple-100",
       learnPath: "security"
     },
     {
@@ -182,8 +182,8 @@ const HomeScreen = () => {
       description: "Banking for all Tanzanians",
       descriptionSwahili: "Huduma za benki kwa wote",
       icon: <FiUsers className="h-8 w-8" />,
-      color: "from-blue-500/90 to-blue-600/90",
-      textColor: "text-blue-100",
+      color: "from-yellow-500/90 to-yellow-600/90",
+      textColor: "text-yellow-100",
       learnPath: "inclusion"
     }
   ];
@@ -409,7 +409,7 @@ const HomeScreen = () => {
                 className="flex flex-col items-center"
                 onClick={() => navigate('/send')}
               >
-                <div className="w-14 h-14 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 mb-2 shadow-inner shadow-blue-500/5">
+                <div className="w-14 h-14 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-500 mb-2 shadow-inner shadow-blue-500/5">
                   <FiSend className="h-6 w-6" />
                 </div>
                 <span className="text-sm text-gray-300 font-medium">Send</span>
@@ -421,7 +421,7 @@ const HomeScreen = () => {
                 className="flex flex-col items-center"
                 onClick={() => navigate('/receive')}
               >
-                <div className="w-14 h-14 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 mb-2 shadow-inner shadow-blue-500/5">
+                <div className="w-14 h-14 rounded-full bg-green-500/20 flex items-center justify-center text-green-500 mb-2 shadow-inner shadow-green-500/5">
                   <FiDownload className="h-6 w-6" />
                 </div>
                 <span className="text-sm text-gray-300 font-medium">Receive</span>
@@ -433,10 +433,10 @@ const HomeScreen = () => {
                 className="flex flex-col items-center"
                 onClick={() => navigate('/service-payment')}
               >
-                <div className="w-14 h-14 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 mb-2 shadow-inner shadow-blue-500/5">
+                <div className="w-14 h-14 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-500 mb-2 shadow-inner shadow-yellow-500/5">
                   <FiGlobe className="h-6 w-6" />
                 </div>
-                <span className="text-sm text-gray-300 font-medium">Pay Bills</span>
+                <span className="text-sm text-gray-300 font-medium">Services</span>
               </motion.div>
               
               <motion.div
@@ -445,7 +445,7 @@ const HomeScreen = () => {
                 className="flex flex-col items-center"
                 onClick={() => toast.info('Add funds feature coming soon!', { theme: 'dark' })}
               >
-                <div className="w-14 h-14 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 mb-2 shadow-inner shadow-blue-500/5">
+                <div className="w-14 h-14 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-500 mb-2 shadow-inner shadow-purple-500/5">
                   <FiPlus className="h-6 w-6" />
                 </div>
                 <span className="text-sm text-gray-300 font-medium">Add Funds</span>
