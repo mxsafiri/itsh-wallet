@@ -7,7 +7,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FiArrowLeft, FiDollarSign, FiCheck, FiHome, FiList, 
   FiLock, FiSettings, FiRefreshCw, FiZap, FiWifi, 
-  FiPhone, FiTv, FiDroplet, FiCreditCard, FiShoppingBag
+  FiShield, FiDroplet, FiCreditCard, FiShoppingBag,
+  FiUsers, FiHash, FiFileText, FiTrendingUp
 } from 'react-icons/fi';
 
 const ServicePaymentScreen = () => {
@@ -26,13 +27,15 @@ const ServicePaymentScreen = () => {
   
   // List of available services
   const services = [
-    { id: 'electricity', name: 'Electricity', icon: <FiZap />, color: 'green', placeholder: 'Meter Number', prefix: 'TANESCO' },
-    { id: 'water', name: 'Water Bill', icon: <FiDroplet />, color: 'green', placeholder: 'Account Number', prefix: 'DAWASA' },
-    { id: 'internet', name: 'Internet', icon: <FiWifi />, color: 'green', placeholder: 'Account Number', prefix: 'Various' },
-    { id: 'tv', name: 'TV Subscription', icon: <FiTv />, color: 'green', placeholder: 'Subscription ID', prefix: 'Various' },
-    { id: 'mobile', name: 'Airtime', icon: <FiPhone />, color: 'green', placeholder: 'Phone Number', prefix: 'Various' },
-    { id: 'education', name: 'School Fees', icon: <FiCreditCard />, color: 'green', placeholder: 'Student ID', prefix: 'Various' },
-    { id: 'shopping', name: 'Shopping', icon: <FiShoppingBag />, color: 'green', placeholder: 'Reference Number', prefix: 'Various' }
+    { id: 'electricity', name: 'Electricity', icon: <FiZap />, color: 'blue', placeholder: 'Meter Number', prefix: 'TANESCO' },
+    { id: 'water', name: 'Water Bill', icon: <FiDroplet />, color: 'blue', placeholder: 'Account Number', prefix: 'DAWASA' },
+    { id: 'insurance', name: 'Insurance', icon: <FiShield />, color: 'green', placeholder: 'Policy Number', prefix: 'Various' },
+    { id: 'loan', name: 'Loan Payment', icon: <FiTrendingUp />, color: 'purple', placeholder: 'Loan Account', prefix: 'Various' },
+    { id: 'savings', name: 'Saving Groups', icon: <FiUsers />, color: 'yellow', placeholder: 'Group ID', prefix: 'Various' },
+    { id: 'lipa', name: 'LIPA NAMBA', icon: <FiHash />, color: 'green', placeholder: 'LIPA NAMBA', prefix: 'TRA' },
+    { id: 'till', name: 'TILL Number', icon: <FiFileText />, color: 'blue', placeholder: 'TILL Number', prefix: 'Various' },
+    { id: 'education', name: 'School Fees', icon: <FiCreditCard />, color: 'purple', placeholder: 'Student ID', prefix: 'Various' },
+    { id: 'shopping', name: 'Shopping', icon: <FiShoppingBag />, color: 'yellow', placeholder: 'Reference Number', prefix: 'Various' }
   ];
   
   const handleSelectService = (service) => {
@@ -177,9 +180,26 @@ const ServicePaymentScreen = () => {
                     whileTap={{ scale: 0.97 }}
                     variants={itemVariants}
                   >
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 bg-green-500/20 text-green-500`}>
-                      {service.icon}
-                    </div>
+                    {service.color === 'blue' && (
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3 bg-blue-500/20 text-blue-500">
+                        {service.icon}
+                      </div>
+                    )}
+                    {service.color === 'green' && (
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3 bg-green-500/20 text-green-500">
+                        {service.icon}
+                      </div>
+                    )}
+                    {service.color === 'purple' && (
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3 bg-purple-500/20 text-purple-500">
+                        {service.icon}
+                      </div>
+                    )}
+                    {service.color === 'yellow' && (
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3 bg-yellow-500/20 text-yellow-500">
+                        {service.icon}
+                      </div>
+                    )}
                     <span className="text-sm font-medium text-text">{service.name}</span>
                   </motion.button>
                 ))}
@@ -207,9 +227,26 @@ const ServicePaymentScreen = () => {
               <motion.div variants={itemVariants}>
                 <form onSubmit={handleDetailsSubmit} className="card p-4">
                   <div className="flex items-center mb-6">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center mr-4 bg-green-500/20 text-green-500`}>
-                      {selectedService.icon}
-                    </div>
+                    {selectedService.color === 'blue' && (
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center mr-4 bg-blue-500/20 text-blue-500">
+                        {selectedService.icon}
+                      </div>
+                    )}
+                    {selectedService.color === 'green' && (
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center mr-4 bg-green-500/20 text-green-500">
+                        {selectedService.icon}
+                      </div>
+                    )}
+                    {selectedService.color === 'purple' && (
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center mr-4 bg-purple-500/20 text-purple-500">
+                        {selectedService.icon}
+                      </div>
+                    )}
+                    {selectedService.color === 'yellow' && (
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center mr-4 bg-yellow-500/20 text-yellow-500">
+                        {selectedService.icon}
+                      </div>
+                    )}
                     <div>
                       <p className="font-medium text-text">{selectedService.name}</p>
                       <p className="text-sm text-text-secondary">{selectedService.prefix}</p>
@@ -310,9 +347,26 @@ const ServicePaymentScreen = () => {
               
               <motion.div variants={itemVariants} className="card p-5">
                 <div className="flex items-center mb-6">
-                  <div className={`w-16 h-16 rounded-full flex items-center justify-center mr-4 bg-green-500/20 text-green-500`}>
-                    {selectedService.icon}
-                  </div>
+                  {selectedService.color === 'blue' && (
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center mr-4 bg-blue-500/20 text-blue-500">
+                      {selectedService.icon}
+                    </div>
+                  )}
+                  {selectedService.color === 'green' && (
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center mr-4 bg-green-500/20 text-green-500">
+                      {selectedService.icon}
+                    </div>
+                  )}
+                  {selectedService.color === 'purple' && (
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center mr-4 bg-purple-500/20 text-purple-500">
+                      {selectedService.icon}
+                    </div>
+                  )}
+                  {selectedService.color === 'yellow' && (
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center mr-4 bg-yellow-500/20 text-yellow-500">
+                      {selectedService.icon}
+                    </div>
+                  )}
                   <div>
                     <p className="font-medium text-lg text-text">{selectedService.name}</p>
                     <p className="text-sm text-text-secondary">{selectedService.prefix}</p>
@@ -426,41 +480,76 @@ const ServicePaymentScreen = () => {
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="h-full flex flex-col items-center justify-center text-center py-6"
+              className="h-full flex flex-col items-center justify-center text-center"
             >
-              <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-green-500/20 flex items-center justify-center">
+              <motion.div 
+                variants={itemVariants}
+                className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mb-6"
+              >
                 <FiCheck className="h-10 w-10 text-green-500" />
-              </div>
+              </motion.div>
               
               <motion.h2 
-                className="text-2xl font-bold mb-2 text-text"
                 variants={itemVariants}
+                className="text-2xl font-bold mb-2 text-text"
               >
                 Payment Successful!
               </motion.h2>
+              
               <motion.p 
-                className="text-text-secondary mb-8"
                 variants={itemVariants}
+                className="text-text-secondary mb-6"
               >
-                You have successfully paid {parseFloat(amount).toLocaleString()} iTZS for {selectedService?.name} service.
+                Your payment has been processed successfully.
               </motion.p>
               
-              <motion.div variants={itemVariants} className="card p-4 w-full mb-8">
-                <div className="flex justify-between mb-3">
-                  <span className="text-text-secondary">Service</span>
-                  <span className="text-text">{selectedService?.name}</span>
+              <motion.div 
+                variants={itemVariants}
+                className="card p-5 w-full max-w-md mb-6"
+              >
+                <div className="flex items-center mb-4">
+                  {selectedService.color === 'blue' && (
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center mr-4 bg-blue-500/20 text-blue-500">
+                      {selectedService.icon}
+                    </div>
+                  )}
+                  {selectedService.color === 'green' && (
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center mr-4 bg-green-500/20 text-green-500">
+                      {selectedService.icon}
+                    </div>
+                  )}
+                  {selectedService.color === 'purple' && (
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center mr-4 bg-purple-500/20 text-purple-500">
+                      {selectedService.icon}
+                    </div>
+                  )}
+                  {selectedService.color === 'yellow' && (
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center mr-4 bg-yellow-500/20 text-yellow-500">
+                      {selectedService.icon}
+                    </div>
+                  )}
+                  <div>
+                    <p className="font-medium text-text">{selectedService.name}</p>
+                    <p className="text-sm text-text-secondary">{selectedService.prefix}</p>
+                  </div>
                 </div>
-                <div className="flex justify-between mb-3">
-                  <span className="text-text-secondary">{selectedService?.placeholder}</span>
-                  <span className="text-text">{accountNumber}</span>
+                
+                <div className="border-t border-b border-dark-700/30 py-4 my-4">
+                  <div className="flex justify-between mb-3">
+                    <span className="text-text-secondary">{selectedService.placeholder}</span>
+                    <span className="font-medium text-text">{accountNumber}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-text-secondary">Amount</span>
+                    <span className="font-bold text-text">{parseFloat(amount).toLocaleString()} iTZS</span>
+                  </div>
                 </div>
-                <div className="flex justify-between mb-3">
-                  <span className="text-text-secondary">Amount</span>
-                  <span className="font-bold text-text">{parseFloat(amount).toLocaleString()} iTZS</span>
-                </div>
-                <div className="flex justify-between pt-2 border-t border-dark-700/30">
-                  <span className="text-text-secondary">Transaction ID</span>
-                  <span className="text-xs text-text-secondary">{transactionId}</span>
+                
+                <div className="pt-2 border-t border-dark-700/30">
+                  <div className="flex justify-between mb-3">
+                    <span className="text-text-secondary">Transaction ID</span>
+                    <span className="text-xs text-text-secondary">{transactionId}</span>
+                  </div>
                 </div>
               </motion.div>
               
