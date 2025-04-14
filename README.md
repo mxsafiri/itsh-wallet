@@ -1,6 +1,6 @@
 # iTZS Mobile Wallet
 
-A mobile wallet application for sending and receiving iTZS tokens on the Stellar network.
+A mobile wallet application for sending and receiving iTZS tokens designed to revolutionize payments in Tanzania. Our platform enables secure, fast, and convenient transactions using digital currency. Built on modern blockchain technology, itsh NEDApay provides a reliable alternative to traditional banking while ensuring your funds are secure and accessible anytime, anywhere.
 
 ## Project Structure
 
